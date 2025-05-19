@@ -1,0 +1,21 @@
+{
+  "name": "ocr-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "devDependencies": {
+    "@types/react": "^19.1.4",
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^4.0.0",
+    "classnames": "^2.5.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.2.2",
+    "vite": "^4.0.0"
+  },
+  "scripts": {
+    "build": "vite build",
+    "preview": "vite preview",
+    "start": "vite",
+    "dev": "vite --host"
+  }
+}
