@@ -38,7 +38,7 @@ async def perform_ocr(request: OCRRequest):
 
         # Run EasyOCR
         reader = easyocr.Reader(['en'])  # Add 'ch_sim' if you have Chinese too
-        results = reader.readtext(np.array(image), width_ths=0.7, ycenter_ths=1.5)
+        results = reader.readtext(np.array(image), ycenter_ths=1.5)
 
         # Format OCR output
         ocr_results = [

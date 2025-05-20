@@ -18,13 +18,3 @@ input {
     width: 100%;
 }
 
-.result-table {
-    display: flex;
-    flex-wrap: wrap;
-    width: 100%;
-}
-
-.result-span {
-    text-align: center;
-    width: 25%;
-}
