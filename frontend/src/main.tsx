@@ -68,11 +68,11 @@ const OCRApp = () => {
       />
 
       <h2>Results:</h2>
-      <ul>
+      <div className="result-table">
         {ocrResults.length > 0 && ocrResults.map((item, idx) => {
-          return <li key={`${idx}-${item.text}`}>{item.text}</li>
+          return <div className="result-span" key={`${idx}-${item.text}`}>{item.text}</div>
         })}
-      </ul>
+      </div>
     </div>
   );
 };
