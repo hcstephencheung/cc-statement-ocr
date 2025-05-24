@@ -17,26 +17,28 @@ interface OCRResult {
 const OCRApp = () => {
   const [status, setStatus] = React.useState<API_STATUS>(API_STATUS.IDLE);
   const [ocrResults, setOcrResults] = React.useState<OCRResult[]>([]);
+  const [perLineResults, setPerLineResults] = React.useState<OCRResult[]>([]);
   const [imageUrl, setImageUrl] = React.useState('');
 
   const handleImageUrlSubmitted = async (url: string) => {
     setImageUrl(url);
     setStatus(API_STATUS.LOADING);
     try {
-      const response = await fetch('/api/ocr', {
+      const response = await fetch('/api/ocr/parse', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ imageUrl: url })
+        body: JSON.stringify({ imageUrl: url, read_per_line: true })
       });
 
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
 
-      const data = await response.json();
-      setOcrResults(data);
+      const { primary, per_line_results } = await response.json();
+      setOcrResults(primary);
+      setPerLineResults(per_line_results);
       setStatus(API_STATUS.IDLE);
     } catch (error) {
       console.error('Error fetching OCR results:', error);
@@ -70,6 +72,13 @@ const OCRApp = () => {
       <h2>Results:</h2>
       <div className="result-table">
         {ocrResults.length > 0 && ocrResults.map((item, idx) => {
+          return <div className="result-span" key={`${idx}-${item.text}`}>{item.text}</div>
+        })}
+      </div>
+
+      <h2>Per Line Results:</h2>
+      <div className="result-table">
+        {perLineResults.length > 0 && perLineResults.map((item, idx) => {
           return <div className="result-span" key={`${idx}-${item.text}`}>{item.text}</div>
         })}
       </div>
