@@ -6,9 +6,6 @@
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.0.0",
-    "classnames": "^2.5.1",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
     "typescript": "^5.2.2",
     "vite": "^4.0.0"
   },
@@ -17,5 +14,11 @@
     "preview": "vite preview",
     "start": "vite",
     "dev": "vite --host"
+  },
+  "dependencies": {
+    "classnames": "^2.5.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "wouter": "^3.7.0"
   }
 }
