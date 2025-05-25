@@ -4,11 +4,13 @@ import { Route, Switch } from "wouter";
 import {
   FourOhFourPage,
   OcrPage,
+  CsvPage
 } from './pages';
 
 const App = () => (
   <Switch>
     <Route path="/ocr" component={OcrPage} />
+    <Route path="/csv" component={CsvPage} />
 
     {/* Default route in a switch */}
     <Route>
