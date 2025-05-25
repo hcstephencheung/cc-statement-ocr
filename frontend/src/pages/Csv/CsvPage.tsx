@@ -1,5 +1,11 @@
 import React, { useState } from 'react';
 
+interface LineItem {
+    date: string;
+    description: string;
+    debit: boolean;
+    amount: number
+}
 
 const CsvPage = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -21,6 +27,26 @@ const CsvPage = () => {
         }
     };
 
+    const transformCsvToJson = (csvData: string[][]): LineItem[] => {
+        return csvData.reduce((result, row) => {
+            if (row.length >= 6) {
+                const date = row[1]?.replace(/-/g, '');
+                const description = row[2]?.trim();
+                const debit = row[5]?.toLowerCase().includes('debit');
+                const amount = parseFloat(row[6]?.replace(/[^0-9.-]+/g, ''));
+
+                if (date && description && !isNaN(amount)) {
+                    result.push({ date, description, debit, amount });
+                }
+            }
+            return result;
+        }, [] as LineItem[]);
+    };
+
+    // Example usage of transformCsvToJson
+    const transformedData = transformCsvToJson(csvData);
+    console.log(transformedData);
+
     return (
         <div className="page">
             <h1>CSV solution</h1>
@@ -36,7 +62,7 @@ const CsvPage = () => {
                     {csvData.map((row, rowIndex) => (
                         <div key={rowIndex} className="flex space-x-4">
                             {row.map((cell, cellIndex) => (
-                                <div key={cellIndex} className="border p-2">{cell}</div>
+                                <div key={cellIndex} className="border-right-1 p-2">{cell}</div>
                             ))}
                         </div>
                     ))}
