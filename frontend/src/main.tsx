@@ -1,3 +1,4 @@
+import './main.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Route, Switch } from "wouter";
@@ -6,6 +7,7 @@ import {
   OcrPage,
   CsvPage
 } from './pages';
+
 
 const App = () => (
   <Switch>
