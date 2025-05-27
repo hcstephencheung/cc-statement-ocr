@@ -1,6 +1,0 @@
-{
-  "dependencies": {
-    "@cloudflare/vite-plugin": "^1.2.4",
-    "@tailwindcss/vite": "^4.1.7"
-  }
-}
