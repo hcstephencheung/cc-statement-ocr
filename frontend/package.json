@@ -4,13 +4,15 @@
   "type": "module",
   "private": true,
   "devDependencies": {
+    "@cloudflare/vite-plugin": "^1.2.4",
     "@tailwindcss/vite": "^4.1.7",
     "@types/react": "^19.1.4",
     "@types/react-dom": "^19.1.5",
     "@vitejs/plugin-react": "^4.5.0",
     "tailwindcss": "^4.1.7",
     "typescript": "^5.2.2",
-    "vite": "^6.3.5"
+    "vite": "^6.3.5",
+    "wrangler": "^4.16.1"
   },
   "scripts": {
     "build": "vite build",

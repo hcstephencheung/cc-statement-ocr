@@ -6,8 +6,8 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 export default defineConfig({
   plugins: [
     react(),
+    cloudflare(),
     tailwindcss(),
-    cloudflare()
   ],
   server: {
     host: '0.0.0.0',
