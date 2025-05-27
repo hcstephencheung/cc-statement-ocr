@@ -16,6 +16,7 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''), // Remove '/api' prefix
       },
-    }
+    },
+    allowedHosts: ['cc-statement-ocr-frontend.onrender.com'],
   },
 });
