@@ -1,0 +1,31 @@
+{
+  "name": "ocr-frontend",
+  "type": "javascript",
+  "account_id": "6cf5b7ff46b291e95096647771d0ddc9",
+  "workers_dev": true,
+  "routes": [
+    {
+      "pattern": "scheung.dev/*",
+      "script": "ocr-frontend"
+    }
+  ],
+  "build": {
+    "command": "npm run build",
+    "cwd": "./",
+    "upload": {
+      "format": "modules",
+      "dir": "dist"
+    }
+  },
+  "env": {
+    "production": {
+      "workers_dev": false,
+      "routes": [
+        {
+          "pattern": "scheung.dev/*",
+          "script": "ocr-frontend"
+        }
+      ]
+    }
+  }
+}
