@@ -1,24 +1,12 @@
 {
   "name": "cc-statement-ocr",
-  "account_id": "6cf5b7ff46b291e95096647771d0ddc9",
+  "main": "src/main.tsx",
   "workers_dev": true,
   "routes": [
     {
-      "pattern": "scheung.dev/*"
+      "pattern": "budget-helper.scheung.dev/*",
+      "custom_domain": true,
+      "zone_id": "a0f58ed8a7cf2709ad3726631eca49f1"
     }
-  ],
-  "build": {
-    "command": "npm run build",
-    "cwd": "./"
-  },
-  "env": {
-    "production": {
-      "workers_dev": false,
-      "routes": [
-        {
-          "pattern": "scheung.dev/*"
-        }
-      ]
-    }
-  }
+  ]
 }
