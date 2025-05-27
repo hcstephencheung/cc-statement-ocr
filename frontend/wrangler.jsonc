@@ -2,6 +2,7 @@
   "name": "cc-statement-ocr",
   "main": "src/main.tsx",
   "workers_dev": true,
+  "compatibility_date": "2025-05-26",
   "routes": [
     {
       "pattern": "budget-helper.scheung.dev/*",
