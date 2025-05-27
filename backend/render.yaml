@@ -1,0 +1,25 @@
+# Exported from Render on 2025-05-27T21:15:07Z
+services:
+- type: web
+  name: cc-statement-ocr
+  runtime: docker
+  repo: https://github.com/hcstephencheung/cc-statement-ocr
+  branch: render/deploy
+  plan: free
+  region: oregon
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  autoDeployTrigger: commit
+  rootDir: backend
+- type: web
+  name: cc-statement-ocr
+  runtime: docker
+  repo: https://github.com/hcstephencheung/cc-statement-ocr
+  branch: render/deploy
+  plan: free
+  region: oregon
+  dockerContext: .
+  dockerfilePath: ./Dockerfile
+  autoDeployTrigger: commit
+  rootDir: frontend
+version: "1"
