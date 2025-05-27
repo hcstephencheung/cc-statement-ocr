@@ -4,8 +4,7 @@
   "workers_dev": true,
   "routes": [
     {
-      "pattern": "scheung.dev/*",
-      "script": "ocr-frontend"
+      "pattern": "scheung.dev/*"
     }
   ],
   "build": {
