@@ -1,7 +1,7 @@
 # Exported from Render on 2025-05-27T21:15:07Z
 services:
 - type: web
-  name: cc-statement-ocr
+  name: cc-statement-ocr-backend
   runtime: docker
   repo: https://github.com/hcstephencheung/cc-statement-ocr
   branch: render/deploy
@@ -12,7 +12,7 @@ services:
   autoDeployTrigger: commit
   rootDir: backend
 - type: web
-  name: cc-statement-ocr
+  name: cc-statement-ocr-frontend
   runtime: docker
   repo: https://github.com/hcstephencheung/cc-statement-ocr
   branch: render/deploy
