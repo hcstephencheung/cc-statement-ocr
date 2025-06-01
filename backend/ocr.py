@@ -7,7 +7,7 @@ from PIL import Image
 import io
 import numpy as np
 
-ocr_router = APIRouter(prefix="/ocr")
+ocr_router = APIRouter(prefix="/api/ocr")
 
 class OCRRequest(BaseModel):
     imageUrl: str
