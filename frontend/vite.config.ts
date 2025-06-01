@@ -9,7 +9,7 @@ export default defineConfig({
   ],
   server: {
     host: '0.0.0.0',
-    allowedHosts: ['cc-statement-ocr-frontend-572034226949.europe-west1.run.app'],
+    allowedHosts: ['cc-statement-ocr-frontend-572034226949.europe-west1.run.app', 'budget-helper.scheung.dev'],
     port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
     proxy: {
       '/api': {
