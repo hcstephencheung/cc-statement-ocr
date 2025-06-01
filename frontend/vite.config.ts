@@ -9,7 +9,7 @@ export default defineConfig({
   ],
   server: {
     host: '0.0.0.0',
-    port: 3000,
+    port: process.env.PORT ? parseInt(process.env.PORT) : 3000,
     proxy: {
       '/api': {
         target: 'http://backend:9000', // Backend server
