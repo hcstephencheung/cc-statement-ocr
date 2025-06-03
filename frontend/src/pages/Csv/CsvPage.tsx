@@ -20,6 +20,7 @@ const transformCsvToLineItem = (csvData: string[][]): LineItem[] => {
         if (row.length >= 6) {
             const date = _removeQuotes(row[1]?.replace(/-/g, ''));
             const description = _removeQuotes(row[2]?.trim());
+            const subDescription = _removeQuotes(row[3]?.trim());
             const debit = row[5]?.toLowerCase().includes('debit');
             const amount = parseFloat(row[6]?.replace(/[^0-9.-]+/g, ''));
 
@@ -68,6 +69,10 @@ const CsvPage = () => {
                 const text = e.target?.result as string;
                 const rows = text.split('\n').map(row => row.split(','));
                 const items = transformCsvToLineItem(rows);
+
+                // for debugging
+                console.log(items.map(item => `"${item.description}"`).join(',').toString());
+
                 setLineItems(items);
             };
             reader.readAsText(selectedFile);
