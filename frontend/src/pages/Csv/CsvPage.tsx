@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { Table, Heading, Text, Button, Flex } from '@radix-ui/themes';
+import { UploadIcon } from '@radix-ui/react-icons';
 
 interface LineItem {
     date: string;
@@ -11,7 +13,7 @@ const _removeQuotes = (str: string): string => {
     const result = str.replace(/^\"/, '').replace(/\"$/, ''); // Clean up quotes if present
     return result
 }
-    
+
 
 const transformCsvToLineItem = (csvData: string[][]): LineItem[] => {
     return csvData.reduce((result, row) => {
@@ -29,9 +31,33 @@ const transformCsvToLineItem = (csvData: string[][]): LineItem[] => {
     }, [] as LineItem[]);
 };
 
+const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => (
+    <Table.Root className="w-full mt-6">
+        <Table.Header>
+            <Table.Row>
+                <Table.ColumnHeaderCell className="px-4">Date</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell className="px-4">Description</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell className="px-4">Type</Table.ColumnHeaderCell>
+                <Table.ColumnHeaderCell className="px-4">Amount</Table.ColumnHeaderCell>
+            </Table.Row>
+        </Table.Header>
+        <Table.Body>
+            {lineItems.map((lineItem, idx) => (
+                <Table.Row key={idx}>
+                    <Table.Cell className="px-4">{lineItem.date}</Table.Cell>
+                    <Table.Cell className="px-4">{lineItem.description}</Table.Cell>
+                    <Table.Cell className="px-4">{lineItem.debit ? 'Debit' : 'Credit'}</Table.Cell>
+                    <Table.Cell className="px-4">{lineItem.amount}</Table.Cell>
+                </Table.Row>
+            ))}
+        </Table.Body>
+    </Table.Root>
+);
+
 const CsvPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
+    const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
@@ -50,26 +76,36 @@ const CsvPage = () => {
         }
     };
 
-    return (
-        <div className="page">
-            <h1>CSV solution</h1>
-            <input 
-                type="file" 
-                accept=".csv" 
-                onChange={handleFileChange} 
-                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-            />
-            {file && <p>Uploaded file: {file.name}</p>}
+    const handleButtonClick = () => {
+        fileInputRef.current?.click();
+    };
 
-            {lineItems.length > 0 && lineItems.map(lineItem => (
-                <div className="line-item flex space-x-2">
-                    <p className="text-align-center my-4">{lineItem.date}</p>
-                    <p className="text-align-center my-4">{lineItem.description}</p>
-                    <p className="text-align-center my-4">{lineItem.debit ? 'Debit': 'Credit'}</p>
-                    <p className="text-align-center my-4">{lineItem.amount}</p>
-                </div>
-            ))}
-        </div>
+    // TODO: ideal flow
+    /**
+     * 1. user uploads a CSV, display it in a table
+     * 2. create a list, each item is category name that is auto-classified by AI in the backend
+     * 3. each sub item is an item from the CSV table, there should be a sum of total
+     * 4. export CSV button should export categories with their sums
+     */
+
+    return (
+        <div className="p-4">
+            <Heading as="h1" size="6" mb="4">CSV solution</Heading>
+            <input
+                className="hidden"
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                onChange={handleFileChange}
+            />
+            <Flex gapX="2" align="center">
+                <Button color="cyan" variant="soft" radius="large" onClick={handleButtonClick} mb="3">
+                    <UploadIcon /> Upload CSV
+                </Button>
+                {file && <Text as="p" mb="3">Uploaded file: {file.name}</Text>}
+            </Flex>
+            {lineItems.length > 0 && <LineItemTable lineItems={lineItems} />}
+        </div >
     )
 }
 

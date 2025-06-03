@@ -1,4 +1,6 @@
 import './main.css';
+import "@radix-ui/themes/styles.css";
+import { Theme } from "@radix-ui/themes";
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { Route, Switch } from "wouter";
@@ -10,15 +12,17 @@ import {
 
 
 const App = () => (
-  <Switch>
-    <Route path="/ocr" component={OcrPage} />
-    <Route path="/csv" component={CsvPage} />
+  <Theme>
+    <Switch>
+      <Route path="/ocr" component={OcrPage} />
+      <Route path="/csv" component={CsvPage} />
 
-    {/* Default route in a switch */}
-    <Route>
-      <FourOhFourPage />
-    </Route>
-  </Switch>
+      {/* Default route in a switch */}
+      <Route>
+        <FourOhFourPage />
+      </Route>
+    </Switch>
+  </Theme>
 )
 
 
