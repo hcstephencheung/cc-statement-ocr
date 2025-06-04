@@ -7,8 +7,11 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, validator
 from typing import List, Dict, Any
 from fastapi import FastAPI
-from ocr import ocr_router
-from classify_csv import csv_router
+from views.ocr import ocr_router
+from views.classify_csv import csv_router
+
+from dotenv import load_dotenv
+load_dotenv()
 
 # Define FastAPI app
 app = FastAPI()

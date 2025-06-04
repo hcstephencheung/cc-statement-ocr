@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Heading, Text, Button, Flex } from '@radix-ui/themes';
-import { UploadIcon } from '@radix-ui/react-icons';
+import { Table, Heading, Text, Button, Flex, DataList, Badge } from '@radix-ui/themes';
+import { CircleIcon, CodeIcon, UploadIcon } from '@radix-ui/react-icons';
 
 interface LineItem {
     date: string;
@@ -55,9 +55,30 @@ const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => (
     </Table.Root>
 );
 
+// New component to display classified data
+const ClassifiedData: React.FC<{ data: Record<string, any> }> = ({ data }) => (
+    <DataList.Root>
+        {Object.entries(data).map(([key, value]) => (
+            <DataList.Item key={key}>
+                <DataList.Label>{key}</DataList.Label>
+                <DataList.Value>
+                    {Array.isArray(value)
+                        ? value.map((item, idx) => (
+                            <Badge key={idx} className="mr-1" color="gray">{item.name}</Badge>
+                        ))
+                        : `${value}`
+                    }
+                </DataList.Value>
+            </DataList.Item>
+        ))}
+    </DataList.Root>
+);
+
 const CsvPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
+    const [classifying, setClassifying] = useState<boolean>(false);
+    const [classifiedData, setClassifiedData] = useState<{}>({});
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -85,6 +106,22 @@ const CsvPage = () => {
         fileInputRef.current?.click();
     };
 
+    const handleClassifyCsvClick = async () => {
+        setClassifying(true);
+        const result = await fetch('/api/csv/classify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ line_items: lineItems }),
+        });
+        if (result.ok) {
+            const classifiedData = await result.json();
+            setClassifiedData(classifiedData.classified_items);
+        }
+        setClassifying(false);
+    }
+
     // TODO: ideal flow
     /**
      * 1. user uploads a CSV, display it in a table
@@ -110,6 +147,16 @@ const CsvPage = () => {
                 {file && <Text as="p" mb="3">Uploaded file: {file.name}</Text>}
             </Flex>
             {lineItems.length > 0 && <LineItemTable lineItems={lineItems} />}
+            {lineItems.length > 0 && (
+                <Button
+                    color="indigo" variant="soft" radius="large"
+                    onClick={handleClassifyCsvClick} my="4">
+                    {classifying ? <CircleIcon /> : <CodeIcon />} Classify CSV
+                </Button>
+            )}
+            {classifiedData && Object.keys(classifiedData).length > 0 && (
+                <ClassifiedData data={classifiedData} />
+            )}
         </div >
     )
 }
