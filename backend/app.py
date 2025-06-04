@@ -10,9 +10,6 @@ from fastapi import FastAPI
 from views.ocr import ocr_router
 from views.classify_csv import csv_router
 
-from dotenv import load_dotenv
-load_dotenv()
-
 # Define FastAPI app
 app = FastAPI()
 
