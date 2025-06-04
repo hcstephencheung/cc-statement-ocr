@@ -102,7 +102,7 @@ class Completions:
             },
             reasoning={},
             tools=[],
-            temperature=0.1,
+            temperature=0,
             max_output_tokens=2048,
             top_p=1,
             store=True

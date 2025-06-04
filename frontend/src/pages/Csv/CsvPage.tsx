@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { Table, Heading, Text, Button, Flex, DataList, Badge } from '@radix-ui/themes';
-import { CircleIcon, CodeIcon, UploadIcon } from '@radix-ui/react-icons';
+import { Table, Heading, Text, Button, Flex, DataList, Badge, Spinner } from '@radix-ui/themes';
+import { CodeIcon, UploadIcon } from '@radix-ui/react-icons';
 
 interface LineItem {
     date: string;
@@ -148,7 +148,7 @@ const CsvPage = () => {
                 <Button
                     color="indigo" variant="soft" radius="large"
                     onClick={handleClassifyCsvClick} my="4">
-                    {classifying ? <CircleIcon /> : <CodeIcon />} Classify CSV
+                    <Spinner loading={classifying}><CodeIcon /></Spinner> Classify CSV
                 </Button>
             )}
             {classifiedData && Object.keys(classifiedData).length > 0 && (
