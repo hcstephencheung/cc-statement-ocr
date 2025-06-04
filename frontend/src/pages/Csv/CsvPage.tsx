@@ -91,9 +91,6 @@ const CsvPage = () => {
                 const rows = text.split('\n').map(row => row.split(','));
                 const items = transformCsvToLineItem(rows);
 
-                // for debugging
-                console.log(items.map(item => `"${item.description}"`).join(',').toString());
-
                 setLineItems(items);
             };
             reader.readAsText(selectedFile);
