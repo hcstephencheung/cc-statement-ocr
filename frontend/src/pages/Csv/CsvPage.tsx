@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heading, Text, Button, Flex, Spinner, Tabs, Card } from '@radix-ui/themes';
+import { Heading, Text, Button, Flex, Spinner, Tabs, Card, RadioGroup, RadioCards, Box } from '@radix-ui/themes';
 import { MagicWandIcon, UploadIcon } from '@radix-ui/react-icons';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
@@ -18,7 +18,24 @@ const _removeQuotes = (str: string): string => {
 }
 
 
-const transformCsvToLineItem = (csvData: string[][]): LineItem[] => {
+const transformTdCsvToLineItem = (csvData: string[][]): LineItem[] => {
+    return csvData.reduce((result, row) => {
+        if (row.length >= 5) {
+            const date = _removeQuotes(row[0]?.replace(/-/g, ''));
+            const description = _removeQuotes(row[1]?.trim());
+            const debit = _removeQuotes(row[2]?.trim()) !== '';
+            const amountIdx = debit ? 2 : 3;
+            const amount = parseFloat(row[amountIdx]?.replace(/[^0-9.-]+/g, ''));
+
+            if (date && description && !isNaN(amount)) {
+                result.push({ date, description, debit, amount });
+            }
+        }
+        return result;
+    }, [] as LineItem[]);
+};
+
+const transformScotiabankCsvToLineItem = (csvData: string[][]): LineItem[] => {
     return csvData.reduce((result, row) => {
         if (row.length >= 6) {
             const date = _removeQuotes(row[1]?.replace(/-/g, ''));
@@ -69,6 +86,20 @@ const sortAndSumCategories = (summedCategories: Record<string, number>): Record<
     return roundedSummedCategories;
 }
 
+enum Banks {
+    SCOTIABANK = 'Scotiabank',
+    TD = 'TD',
+}
+const BankColors = {
+    [Banks.SCOTIABANK]: 'red',
+    [Banks.TD]: 'green',
+} as const;
+const CsvTransformerByBank = {
+    [Banks.SCOTIABANK]: transformScotiabankCsvToLineItem,
+    [Banks.TD]: transformTdCsvToLineItem,
+}
+const BANK_SELECTION = [Banks.SCOTIABANK, Banks.TD] as const;
+
 const DEFAULT_DESIRED_CATEGORIES = ["Mortgage", "Strata Fees", "Storage Rental", "Electric Bill", "Internet Bill", "Property Tax", "Home Insurance", "Misc. Home improvement", "Food", "debit", "Gimbap Insurance", "Pet food", "Vet", "EV charging+ parking", "Car insurance", "Car maintenance", "Other", "Entertainment", "Vacation planning", "shopping", "Uncategorized"]
 const CsvPage = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -76,7 +107,22 @@ const CsvPage = () => {
     const [sumByCategory, setSumByCategory] = useState<Record<string, number>>({});
     const [classifying, setClassifying] = useState<boolean>(false);
     const [desiredCategories, setDesiredCategories] = useState<string[]>(DEFAULT_DESIRED_CATEGORIES);
+    const [selectedBankIndex, setSelectedBankIndex] = useState<number>(0);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+
+
+    const resetEverything = () => {
+        setLineItems([]);
+        setFile(null);
+        setSumByCategory({})
+    }
+
+    const handleSelectedBankIndexChange = (value: string) => {
+        resetEverything();
+
+        const index = parseInt(value, 10);
+        setSelectedBankIndex(index);
+    };
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const selectedFile = event.target.files?.[0];
@@ -86,7 +132,7 @@ const CsvPage = () => {
             reader.onload = (e) => {
                 const text = e.target?.result as string;
                 const rows = text.split('\n').map(row => row.split(','));
-                const items = transformCsvToLineItem(rows);
+                const items = CsvTransformerByBank[BANK_SELECTION[selectedBankIndex]](rows);
 
                 setLineItems(items);
             };
@@ -125,7 +171,7 @@ const CsvPage = () => {
 
             // sort and sum the categories
             const summedCategories = sumCategories(taggedLineItems);
-            const summedCategoriesWithEmptyEntries = DEFAULT_DESIRED_CATEGORIES.reduce((acc, category) => {
+            const summedCategoriesWithEmptyEntries = desiredCategories.reduce((acc, category) => {
                 acc[category] = summedCategories[category] || 0; // Ensure all desired categories are present
                 return acc;
             }, {} as Record<string, number>);
@@ -149,19 +195,37 @@ const CsvPage = () => {
             <Heading as="h1" size="6" mb="4">CSV solution</Heading>
             <DesiredCategories categories={desiredCategories} setCategories={setDesiredCategories} />
 
-            <input
-                className="hidden"
-                ref={fileInputRef}
-                type="file"
-                accept=".csv"
-                onChange={handleFileChange}
-            />
-            <Flex gapX="2" align="center" mb="3">
-                <Button color="cyan" variant="soft" radius="large" onClick={handleButtonClick}>
-                    <UploadIcon /> Upload CSV
-                </Button>
-                {file && <Text as="p">Uploaded file: {file.name}</Text>}
-            </Flex>
+            <Box>
+                <Box width="50%">
+                    <RadioCards.Root
+                        defaultValue={selectedBankIndex.toString()}
+                        onValueChange={handleSelectedBankIndexChange}
+                        variant="classic"
+                        columns={`${BANK_SELECTION.length}`}
+                    >
+                        {BANK_SELECTION.map((bankName, index) => (
+                            <RadioCards.Item key={index} value={index.toString()} className="w-full">
+                                <Text color={BankColors[bankName]}>{bankName}</Text>
+                            </RadioCards.Item>
+                        ))}
+                    </RadioCards.Root>
+                </Box>
+
+                <Box my="4">
+                    {file && <Text as="p">Uploaded file: {file.name}</Text>}
+                    <Button color="cyan" variant="soft" radius="large" onClick={handleButtonClick}>
+                        <UploadIcon /> Upload CSV
+                    </Button>
+                    {/* hidden file input */}
+                    <input
+                        className="hidden"
+                        ref={fileInputRef}
+                        type="file"
+                        accept=".csv"
+                        onChange={handleFileChange}
+                    />
+                </Box>
+            </Box>
 
             {lineItems.length > 0 && (
                 <Button

@@ -9,6 +9,7 @@ def build_classify_csv_prompt(
         [category]: {
             name: description, // description of financial item
             confidence: number // confidence level of the categorization
+            reason: string // reasoning for confidence level
         }
     }
     """
@@ -27,6 +28,7 @@ def build_classify_csv_prompt(
         - the output should be a JSON object with the following shape:
         - {output_shape}
         - any item that has confidence level lower than 0.6 should be categorized as "Uncategorized"
+        - summarize your reasoning for the confidence level in a single sentence
         - do not assume order specifics, categorize solely based on description
         - do not make up any descriptions
         - do not change the descriptions
@@ -48,8 +50,9 @@ def build_classify_csv_prompt(
         "properties": {
             "name": { "type": "string" },
             "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "reason": { "type": "string" }
         },
-        "required": ["name", "confidence"],
+        "required": ["name", "confidence", "reason"],
         "additionalProperties": False
     }
     for category in categories:

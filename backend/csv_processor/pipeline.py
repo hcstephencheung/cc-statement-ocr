@@ -30,6 +30,12 @@ class CsvProcessorPipeline:
         """
         Add newly processed categories to the cache.
         """
+        logs = []
+        for category, descriptions in classified_categories_descriptions.items():
+            for description in descriptions:
+                logs.append(f'{description["name"]} was categorized as {category} at {description["confidence"]}. Reason: {description["reason"]}')
+        logger.info('Post processed CSV items: ', logs)
+        
         for category, descriptions in classified_categories_descriptions.items():
             for description in descriptions:
                 description_name = f'{description["name"]}' if description['name'] else None
@@ -52,6 +58,10 @@ class CsvProcessorPipeline:
         """
         deduplicated_categories = list(set(categories))
         unclassified_descriptions = self.preprocess_descriptions(descriptions)
+
+        if len(unclassified_descriptions) == 0:
+            # all items were cached, skip gpt
+            return self.descriptions_categories_cache
 
         prompt, text_format = build_classify_csv_prompt(
             categories=deduplicated_categories,
@@ -86,3 +96,4 @@ class CsvProcessorPipeline:
 
         # returns { [description_name]: category }
         return combined_items
+    

@@ -5,6 +5,7 @@ from pydantic import BaseModel, RootModel
 class GptClassifiedDescriptions(BaseModel):
     name: str
     confidence: float
+    reason: str
 
 
 class ClassifiedCategoryDescriptions(RootModel):
