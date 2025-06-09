@@ -27,6 +27,7 @@ class Completions:
             top_p=top_p,
             store=store
         )
+        logger.info(f'OpenAI response: {response.output_text}')
         return response.output_text
 
     def classify_csv_items(self, categories, descriptions):
@@ -69,8 +70,20 @@ class Completions:
             {descriptions}
         """
         output_schema = {}
+        item_schema = {
+            "type": "object",
+            "properties": {
+                "name": { "type": "string" },
+                "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+            },
+            "required": ["name", "confidence"],
+            "additionalProperties": False
+        }
         for category in categories:
-            output_schema[category] = { "type": "array", "items": [] }
+            output_schema[category] = {
+                "type": "array",
+                "items": item_schema
+            }
         text_format = {
             "format": {
                 "type": "json_schema",
@@ -78,6 +91,8 @@ class Completions:
                 "schema": {
                     "type": "object",
                     "properties": output_schema,
+                    "additionalProperties": False,
+                    "required": list(output_schema.keys()),
                 },
                 "strict": True
             }
@@ -95,11 +110,7 @@ class Completions:
                     ]
                 },
             ],
-            text={
-                "format": {
-                    "type": "json_object"
-                }
-            },
+            text=text_format,
             reasoning={},
             tools=[],
             temperature=0,
