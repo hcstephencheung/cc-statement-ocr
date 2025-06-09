@@ -1,5 +1,26 @@
 from typing import Any, Dict, List
-from pydantic import BaseModel
+from pydantic import BaseModel, RootModel
+
+# Types
+class GptClassifiedDescriptions(BaseModel):
+    name: str
+    confidence: float
+
+
+class ClassifiedCategoryDescriptions(RootModel):
+    Dict[str, GptClassifiedDescriptions]
+
+
+class CsvDescription(RootModel):
+    str
+
+
+class CsvCategory(RootModel):
+    str
+
+
+class ClassifiedDescriptionsCategories(RootModel):
+    Dict[CsvDescription, CsvCategory]
 
 
 class LineItem(BaseModel):
@@ -20,6 +41,12 @@ class LineItem(BaseModel):
             raise ValueError("amount must be a number")
         return cls(**data)
     
+
+# APIs
 class ClassifyRequest(BaseModel):
     line_items: List[LineItem]
     desired_categories: List[str]
+
+
+class ClassifyCsvResponse(BaseModel):
+    classified_items: ClassifiedDescriptionsCategories

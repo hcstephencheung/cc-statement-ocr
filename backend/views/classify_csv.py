@@ -1,37 +1,31 @@
 import json
-import logging
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List, Dict, Any
-from gpt.completions import Completions
+from utils.logger import setup_logger
+from csv_processor.pipeline import CsvProcessorPipeline
 
-from serializers.classify_csv_serializers import ClassifyRequest, LineItem
+from serializers.csv_serializers import ClassifyCsvResponse, ClassifyRequest
 
-logger = logging.getLogger()
+logger = setup_logger()
 csv_router = APIRouter(prefix="/api/csv")
 
-CompletionsClient = Completions()
+CsvProcessorClient = CsvProcessorPipeline()
 
 @csv_router.get("/ping")
 async def ping():
     return "CSV classification service is up and running"
 
-@csv_router.post("/classify")
+@csv_router.post("/classify", response_model=ClassifyCsvResponse)
 async def classify_line_items(request: ClassifyRequest):
     try:
         # Validate and process each line item
-        # validated_items = [LineItem.validate(item.dict()) for item in request.line_items]
         line_items = request.line_items
         categories = request.desired_categories
 
         descriptions = [item.description for item in line_items]
 
-        classified_items = CompletionsClient.classify_csv_items(categories, descriptions)
-        classified_items_json = json.loads(classified_items)
+        classified_items = CsvProcessorClient.classify_csv_items(categories, descriptions)
 
-        return {
-            "classified_items": classified_items_json
-        }
+        return { "classified_items": classified_items }
     
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

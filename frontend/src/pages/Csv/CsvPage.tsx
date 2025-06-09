@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { Heading, Text, Button, Flex, Spinner } from '@radix-ui/themes';
-import { CodeIcon, UploadIcon } from '@radix-ui/react-icons';
+import { CodeIcon, MagicWandIcon, UploadIcon } from '@radix-ui/react-icons';
 import ClassifiedData from '../../components/ClassifiedData';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
+import AiIcon from '../../components/AiIcon';
 
 interface LineItem {
     date: string;
@@ -35,12 +36,20 @@ const transformCsvToLineItem = (csvData: string[][]): LineItem[] => {
     }, [] as LineItem[]);
 };
 
+const tagLineItemsWithClassification = (lineItems: LineItem[], classifiedData: Record<string, string>): LineItem[] => {
+    return lineItems.map(item => {
+        return {
+            ...item,
+            category: classifiedData[item.description] || 'Uncategorized' // Default to 'Uncategorized' if no classification found
+        };
+    });
+}
+
 const DEFAULT_DESIRED_CATEGORIES = ["Mortgage", "Strata Fees", "Storage Rental", "Electric Bill", "Internet Bill", "Property Tax", "Home Insurance", "Misc. Home improvement", "Food", "debit", "Gimbap Insurance", "Pet food", "Vet", "EV charging+ parking", "Car insurance", "Car maintenance", "Other", "Entertainment", "Vacation planning", "shopping", "Uncategorized"]
 const CsvPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
     const [classifying, setClassifying] = useState<boolean>(false);
-    const [classifiedData, setClassifiedData] = useState<{}>({});
     const [desiredCategories, setDesiredCategories] = useState<string[]>(DEFAULT_DESIRED_CATEGORIES);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
@@ -85,7 +94,9 @@ const CsvPage = () => {
         });
         if (result.ok) {
             const classifiedData = await result.json();
-            setClassifiedData(classifiedData.classified_items);
+            // TODO: classifiedData is { [description]: category } currently, maybe add a a debug to include original confidence
+            const taggedLineItems = tagLineItemsWithClassification(lineItems, classifiedData.classified_items);
+            setLineItems(taggedLineItems);
         }
         setClassifying(false);
     }
@@ -102,6 +113,7 @@ const CsvPage = () => {
         <div className="p-4">
             <Heading as="h1" size="6" mb="4">CSV solution</Heading>
             <DesiredCategories categories={desiredCategories} setCategories={setDesiredCategories} />
+
             <input
                 className="hidden"
                 ref={fileInputRef}
@@ -109,23 +121,23 @@ const CsvPage = () => {
                 accept=".csv"
                 onChange={handleFileChange}
             />
-            <Flex gapX="2" align="center">
-                <Button color="cyan" variant="soft" radius="large" onClick={handleButtonClick} mb="3">
+            <Flex gapX="2" align="center" mb="3">
+                <Button color="cyan" variant="soft" radius="large" onClick={handleButtonClick}>
                     <UploadIcon /> Upload CSV
                 </Button>
-                {file && <Text as="p" mb="3">Uploaded file: {file.name}</Text>}
+                {file && <Text as="p">Uploaded file: {file.name}</Text>}
             </Flex>
-            {lineItems.length > 0 && <LineItemTable lineItems={lineItems} />}
+
             {lineItems.length > 0 && (
                 <Button
                     color="indigo" variant="soft" radius="large"
-                    onClick={handleClassifyCsvClick} my="4">
-                    <Spinner loading={classifying}><CodeIcon /></Spinner> Classify CSV
+                    onClick={handleClassifyCsvClick}>
+                    <Spinner loading={classifying}><MagicWandIcon /></Spinner> Auto Categorize
                 </Button>
             )}
-            {classifiedData && Object.keys(classifiedData).length > 0 && (
-                <ClassifiedData data={classifiedData} />
-            )}
+
+            {/* Table */}
+            {lineItems.length > 0 && <LineItemTable lineItems={lineItems} />}
         </div >
     )
 }

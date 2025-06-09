@@ -6,6 +6,11 @@ interface LineItem {
     description: string;
     debit: boolean;
     amount: number;
+    category?: string; // Optional category for classification
+}
+
+const hasCategory = (lineItem: LineItem): boolean => {
+    return !!(lineItem.category && lineItem.category !== '');
 }
 
 const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => (
@@ -16,6 +21,7 @@ const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => (
                 <Table.ColumnHeaderCell className="px-4">Description</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell className="px-4">Type</Table.ColumnHeaderCell>
                 <Table.ColumnHeaderCell className="px-4">Amount</Table.ColumnHeaderCell>
+                {hasCategory(lineItems[0]) && <Table.ColumnHeaderCell className="px-4">Category</Table.ColumnHeaderCell>}
             </Table.Row>
         </Table.Header>
         <Table.Body>
@@ -25,6 +31,7 @@ const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => (
                     <Table.Cell className="px-4">{lineItem.description}</Table.Cell>
                     <Table.Cell className="px-4">{lineItem.debit ? 'Debit' : 'Credit'}</Table.Cell>
                     <Table.Cell className="px-4">{lineItem.amount}</Table.Cell>
+                    {hasCategory(lineItem) && <Table.Cell className="px-4">{lineItem.category}</Table.Cell>}
                 </Table.Row>
             ))}
         </Table.Body>
