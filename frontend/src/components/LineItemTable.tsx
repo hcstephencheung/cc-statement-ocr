@@ -14,7 +14,7 @@ const hasCategory = (lineItem: LineItem): boolean => {
 }
 
 const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => (
-    <Table.Root className="w-full mt-6">
+    <Table.Root>
         <Table.Header>
             <Table.Row>
                 <Table.ColumnHeaderCell className="px-4">Date</Table.ColumnHeaderCell>

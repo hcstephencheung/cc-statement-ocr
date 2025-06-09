@@ -1,8 +1,13 @@
 import React from 'react';
 import { DataList, Badge } from '@radix-ui/themes';
 
-const ClassifiedData: React.FC<{ data: Record<string, any> }> = ({ data }) => (
-    <DataList.Root>
+interface DataTableProps {
+    data: Record<string, any>;
+    className?: string;
+}
+
+const DataTable: React.FC<DataTableProps> = ({ data, className }) => (
+    <DataList.Root className={className}>
         {Object.entries(data).map(([key, value]) => (
             <DataList.Item key={key}>
                 <DataList.Label>{key}</DataList.Label>
@@ -19,4 +24,4 @@ const ClassifiedData: React.FC<{ data: Record<string, any> }> = ({ data }) => (
     </DataList.Root>
 );
 
-export default ClassifiedData;
+export default DataTable;

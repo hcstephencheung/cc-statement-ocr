@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { Heading, Text, Button, Flex, Spinner } from '@radix-ui/themes';
-import { CodeIcon, MagicWandIcon, UploadIcon } from '@radix-ui/react-icons';
-import ClassifiedData from '../../components/ClassifiedData';
+import { Heading, Text, Button, Flex, Spinner, Tabs, Card } from '@radix-ui/themes';
+import { MagicWandIcon, UploadIcon } from '@radix-ui/react-icons';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
-import AiIcon from '../../components/AiIcon';
+import DataTable from '../../components/DataTable';
 
 interface LineItem {
     date: string;
@@ -45,10 +44,36 @@ const tagLineItemsWithClassification = (lineItems: LineItem[], classifiedData: R
     });
 }
 
+const sumCategories = (lineItems: Array<LineItem & { category?: string }>): Record<string, number> => {
+    return lineItems.reduce((acc, item) => {
+        const category = item.category || 'Uncategorized';
+        acc[category] = (acc[category] || 0) + item.amount;
+        return acc;
+    }, {} as Record<string, number>);
+};
+
+const sortAndSumCategories = (summedCategories: Record<string, number>): Record<string, number> => {
+    let roundedSummedCategories: Record<string, number> =
+        Object.keys(summedCategories)
+            // sort categories alphabetically, case-insensitive
+            .sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }))
+            // create a new object with sorted categories
+            .reduce((obj, key) => {
+                obj[key] = summedCategories[key];
+                return obj;
+            }, {} as Record<string, number>);
+    for (const category in summedCategories) {
+        roundedSummedCategories[category] = parseFloat(summedCategories[category].toFixed(2)); // Round to 2 decimal places
+    }
+
+    return roundedSummedCategories;
+}
+
 const DEFAULT_DESIRED_CATEGORIES = ["Mortgage", "Strata Fees", "Storage Rental", "Electric Bill", "Internet Bill", "Property Tax", "Home Insurance", "Misc. Home improvement", "Food", "debit", "Gimbap Insurance", "Pet food", "Vet", "EV charging+ parking", "Car insurance", "Car maintenance", "Other", "Entertainment", "Vacation planning", "shopping", "Uncategorized"]
 const CsvPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
+    const [sumByCategory, setSumByCategory] = useState<Record<string, number>>({});
     const [classifying, setClassifying] = useState<boolean>(false);
     const [desiredCategories, setDesiredCategories] = useState<string[]>(DEFAULT_DESIRED_CATEGORIES);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
@@ -97,6 +122,16 @@ const CsvPage = () => {
             // TODO: classifiedData is { [description]: category } currently, maybe add a a debug to include original confidence
             const taggedLineItems = tagLineItemsWithClassification(lineItems, classifiedData.classified_items);
             setLineItems(taggedLineItems);
+
+            // sort and sum the categories
+            const summedCategories = sumCategories(taggedLineItems);
+            const summedCategoriesWithEmptyEntries = DEFAULT_DESIRED_CATEGORIES.reduce((acc, category) => {
+                acc[category] = summedCategories[category] || 0; // Ensure all desired categories are present
+                return acc;
+            }, {} as Record<string, number>);
+            const roundedSummedCategories = sortAndSumCategories(summedCategoriesWithEmptyEntries);
+
+            setSumByCategory(roundedSummedCategories);
         }
         setClassifying(false);
     }
@@ -136,8 +171,29 @@ const CsvPage = () => {
                 </Button>
             )}
 
-            {/* Table */}
-            {lineItems.length > 0 && <LineItemTable lineItems={lineItems} />}
+            {/* Summed categories */}
+            {Object.keys(sumByCategory).length <= 0 ?
+                lineItems.length > 0 && <LineItemTable lineItems={lineItems} />
+                : (
+                    <div className="mt-4">
+                        <Tabs.Root defaultValue="LineItems">
+                            <Tabs.List>
+                                <Tabs.Trigger value="LineItems">Line Items</Tabs.Trigger>
+                                <Tabs.Trigger value="SumByCategory">Sum By Category</Tabs.Trigger>
+                            </Tabs.List>
+
+                            <Tabs.Content value="LineItems">
+                                <LineItemTable lineItems={lineItems} />
+                            </Tabs.Content>
+
+                            <Tabs.Content value="SumByCategory">
+                                <div className="my-4">
+                                    <DataTable data={sumByCategory} />
+                                </div>
+                            </Tabs.Content>
+                        </Tabs.Root>
+                    </div>
+                )}
         </div >
     )
 }
