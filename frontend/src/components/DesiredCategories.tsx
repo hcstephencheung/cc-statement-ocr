@@ -1,3 +1,5 @@
+import { PlusIcon } from '@radix-ui/react-icons';
+import { Box, Button, Flex, IconButton, TextField } from '@radix-ui/themes';
 import React from 'react';
 
 const DesiredCategories: React.FC<{
@@ -15,10 +17,19 @@ const DesiredCategories: React.FC<{
         setInput(e.target.value);
     };
 
+    const addCategory = () => {
+        setCategories(Array.from(new Set([...categories, input.trim()])));
+        setInput('');
+    }
+
+    const handleAddCategory = (e: React.MouseEvent<HTMLButtonElement>) => {
+        e.preventDefault();
+        addCategory();
+    };
+
     const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && input.trim()) {
-            setCategories(Array.from(new Set([...categories, input.trim()])));
-            setInput('');
+            addCategory();
         }
     };
 
@@ -39,15 +50,16 @@ const DesiredCategories: React.FC<{
                     </span>
                 ))}
             </div>
-            <input
-                className="border rounded px-2 py-1"
-                type="text"
-                placeholder="Add category..."
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleInputKeyDown}
-            />
-        </div>
+            <Box>
+                <TextField.Root placeholder="Add category..." value={input} onChange={handleInputChange} onKeyDown={handleInputKeyDown}>
+                    <TextField.Slot pr="3">
+                        <IconButton variant="ghost" onClick={handleAddCategory} disabled={!input.trim()}>
+                            <PlusIcon />
+                        </IconButton>
+                    </TextField.Slot>
+                </TextField.Root>
+            </Box>
+        </div >
     );
 };
 
