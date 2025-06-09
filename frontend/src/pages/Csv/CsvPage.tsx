@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Table, Heading, Text, Button, Flex, DataList, Badge, Spinner } from '@radix-ui/themes';
+import { Heading, Text, Button, Flex, Spinner } from '@radix-ui/themes';
 import { CodeIcon, UploadIcon } from '@radix-ui/react-icons';
 import ClassifiedData from '../../components/ClassifiedData';
 import DesiredCategories from '../../components/DesiredCategories';
@@ -68,12 +68,20 @@ const CsvPage = () => {
 
     const handleClassifyCsvClick = async () => {
         setClassifying(true);
+
+        // Prepare req data
+        const requestBody = {
+            line_items: lineItems,
+            desired_categories: desiredCategories,
+        }
+
+        // make the API call
         const result = await fetch('/api/csv/classify', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ line_items: lineItems }),
+            body: JSON.stringify(requestBody),
         });
         if (result.ok) {
             const classifiedData = await result.json();
