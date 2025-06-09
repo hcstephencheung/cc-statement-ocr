@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Table, Heading, Text, Button, Flex, DataList, Badge, Spinner } from '@radix-ui/themes';
 import { CodeIcon, UploadIcon } from '@radix-ui/react-icons';
+import ClassifiedData from '../../components/ClassifiedData';
+import DesiredCategories from '../../components/DesiredCategories';
+import LineItemTable from '../../components/LineItemTable';
 
 interface LineItem {
     date: string;
@@ -32,53 +35,13 @@ const transformCsvToLineItem = (csvData: string[][]): LineItem[] => {
     }, [] as LineItem[]);
 };
 
-const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => (
-    <Table.Root className="w-full mt-6">
-        <Table.Header>
-            <Table.Row>
-                <Table.ColumnHeaderCell className="px-4">Date</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell className="px-4">Description</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell className="px-4">Type</Table.ColumnHeaderCell>
-                <Table.ColumnHeaderCell className="px-4">Amount</Table.ColumnHeaderCell>
-            </Table.Row>
-        </Table.Header>
-        <Table.Body>
-            {lineItems.map((lineItem, idx) => (
-                <Table.Row key={idx}>
-                    <Table.Cell className="px-4">{lineItem.date}</Table.Cell>
-                    <Table.Cell className="px-4">{lineItem.description}</Table.Cell>
-                    <Table.Cell className="px-4">{lineItem.debit ? 'Debit' : 'Credit'}</Table.Cell>
-                    <Table.Cell className="px-4">{lineItem.amount}</Table.Cell>
-                </Table.Row>
-            ))}
-        </Table.Body>
-    </Table.Root>
-);
-
-// New component to display classified data
-const ClassifiedData: React.FC<{ data: Record<string, any> }> = ({ data }) => (
-    <DataList.Root>
-        {Object.entries(data).map(([key, value]) => (
-            <DataList.Item key={key}>
-                <DataList.Label>{key}</DataList.Label>
-                <DataList.Value>
-                    {Array.isArray(value)
-                        ? value.map((item, idx) => (
-                            <Badge key={idx} className="mr-1" color="gray">{item.name}</Badge>
-                        ))
-                        : `${value}`
-                    }
-                </DataList.Value>
-            </DataList.Item>
-        ))}
-    </DataList.Root>
-);
-
+const DEFAULT_DESIRED_CATEGORIES = ["Mortgage", "Strata Fees", "Storage Rental", "Electric Bill", "Internet Bill", "Property Tax", "Home Insurance", "Misc. Home improvement", "Food", "debit", "Gimbap Insurance", "Pet food", "Vet", "EV charging+ parking", "Car insurance", "Car maintenance", "Other", "Entertainment", "Vacation planning", "shopping", "Uncategorized"]
 const CsvPage = () => {
     const [file, setFile] = useState<File | null>(null);
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
     const [classifying, setClassifying] = useState<boolean>(false);
     const [classifiedData, setClassifiedData] = useState<{}>({});
+    const [desiredCategories, setDesiredCategories] = useState<string[]>(DEFAULT_DESIRED_CATEGORIES);
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -130,6 +93,7 @@ const CsvPage = () => {
     return (
         <div className="p-4">
             <Heading as="h1" size="6" mb="4">CSV solution</Heading>
+            <DesiredCategories categories={desiredCategories} setCategories={setDesiredCategories} />
             <input
                 className="hidden"
                 ref={fileInputRef}

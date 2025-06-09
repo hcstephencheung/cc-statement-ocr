@@ -14,6 +14,7 @@ class Completions:
         self.client = OpenAI(
             api_key=os.environ.get("OPEN_AI_API_KEY")
         )
+        self.classified_categories_cached = {}
 
     def ask(self, input, text, reasoning, tools, temperature=0.1, max_output_tokens=2048, top_p=1, store=True):
         response = self.client.responses.parse(
@@ -28,7 +29,37 @@ class Completions:
             store=store
         )
         logger.info(f'OpenAI response: {response.output_text}')
+        
         return response.output_text
+    
+    def preprocess_categories(self, requested_categories):
+        """
+        Check if categories requested are cached. return un-cached categories.
+        """
+        if not requested_categories:
+            return []
+
+        uncached_categories = []
+        for category in requested_categories:
+            if category not in self.classified_categories_cached:
+                uncached_categories.append(category)
+
+        logger.info(f'Uncached categories: {uncached_categories}')
+
+        return uncached_categories
+    
+    def postprocess_categories(self, classified_categories):
+        """
+        Add newly processed categories to the cache.
+        """
+        if not classified_categories:
+            return []
+        for classified_category in classified_categories:
+            self.classified_categories_cached[classified_category] = classified_categories[classified_category]
+            logger.info(f'Added classified categories cache: {self.classified_categories_cached}')
+        
+        return self.classified_categories_cached
+
 
     def classify_csv_items(self, categories, descriptions):
         output_shape = """
@@ -118,7 +149,5 @@ class Completions:
             top_p=1,
             store=True
         )
-
-        logger.info(f'Classified output: {output}')
 
         return output

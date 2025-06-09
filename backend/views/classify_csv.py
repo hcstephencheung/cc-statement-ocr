@@ -22,9 +22,8 @@ async def classify_line_items(request: ClassifyRequest):
         # Validate and process each line item
         # validated_items = [LineItem.validate(item.dict()) for item in request.line_items]
         line_items = request.line_items
+        categories = request.desired_categories
 
-        # TODO: get this from the UI
-        categories = ["Mortgage", "Strata Fees", "Storage Rental", "Electric Bill", "Internet Bill", "Property Tax", "Home Insurance", "Misc. Home improvement", "Food", "debit", "Gimbap Insurance", "Pet food", "Vet", "EV charging+ parking", "Car insurance", "Car maintenance", "Other", "Entertainment", "Vacation planning", "shopping", "Uncategorized"]
         descriptions = [item.description for item in line_items]
 
         classified_items = CompletionsClient.classify_csv_items(categories, descriptions)

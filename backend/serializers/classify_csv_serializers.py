@@ -22,3 +22,4 @@ class LineItem(BaseModel):
     
 class ClassifyRequest(BaseModel):
     line_items: List[LineItem]
+    desired_categories: List[str]
