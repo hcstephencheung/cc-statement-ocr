@@ -4,9 +4,9 @@ import { FilePlusIcon, MagicWandIcon, ReloadIcon } from '@radix-ui/react-icons';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
 import DataTable from '../../components/DataTable';
-import { DEFAULT_DESIRED_CATEGORIES, LineItem } from './types';
+import { DEFAULT_DESIRED_CATEGORIES, Glossary, LineItem } from './types';
 import { BankRadioCard, Banks, CsvTransformerByBank } from '../../components/BankRadioCard';
-import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv, sanitizeLineItems, santizeClassifiedItems } from './utils';
+import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv, sanitizeLineItems, santizeClassifiedItems, buildGlossary } from './utils';
 import CsvUploader from '../../components/CsvUploader';
 
 const CsvPage = () => {
@@ -15,6 +15,9 @@ const CsvPage = () => {
     const [classifying, setClassifying] = useState<boolean>(false);
     const [desiredCategories, setDesiredCategories] = useState<string[]>(DEFAULT_DESIRED_CATEGORIES);
     const [bank, setBank] = useState<Banks>(Banks.SCOTIABANK)
+    const [glossary, setGlossary] = useState<Glossary>({})
+
+
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const resetEverything = () => {
@@ -63,6 +66,9 @@ const CsvPage = () => {
             const sanitizedClassifiedItems = santizeClassifiedItems(classifiedData.classified_items);
             const taggedLineItems = tagLineItemsWithClassification(sanitizedLineItems, sanitizedClassifiedItems);
             setLineItems(taggedLineItems);
+
+            // set the glossary
+            setGlossary(buildGlossary(taggedLineItems));
 
             // sort and sum the categories
             const summedCategories = sumCategories(taggedLineItems);
@@ -121,6 +127,7 @@ const CsvPage = () => {
                             <Tabs.List>
                                 <Tabs.Trigger value="LineItems">Line Items</Tabs.Trigger>
                                 <Tabs.Trigger value="SumByCategory">Sum By Category</Tabs.Trigger>
+                                <Tabs.Trigger value="Glossary">Glossary</Tabs.Trigger>
                             </Tabs.List>
 
                             <Tabs.Content value="LineItems">
@@ -136,6 +143,12 @@ const CsvPage = () => {
                                         <FilePlusIcon /> Export to CSV
                                     </Button>
                                     <DataTable data={sumByCategory} />
+                                </div>
+                            </Tabs.Content>
+
+                            <Tabs.Content value="Glossary">
+                                <div className="my-4">
+                                    <DataTable data={glossary} />
                                 </div>
                             </Tabs.Content>
                         </Tabs.Root>

@@ -1,4 +1,4 @@
-import { CategorizedLineItem, ClassifiedItem, LineItem, UNCATEGORIZED } from "../types";
+import { CategorizedLineItem, ClassifiedItem, Glossary, LineItem, UNCATEGORIZED } from "../types";
 
 export const _removeQuotes = (str: string): string => {
     const result = str.replace(/^\"/, '').replace(/\"$/, ''); // Clean up quotes if present
@@ -105,6 +105,14 @@ export const sortAndSumCategories = (summedCategories: Record<string, number>): 
     }
 
     return roundedSummedCategories;
+}
+
+export const buildGlossary = (categorizedLineItems: CategorizedLineItem[]) => {
+    let glossary = {} as Glossary;
+    for (const item of categorizedLineItems) {
+        glossary[item.description] = item.category;
+    }
+    return glossary
 }
 
 const EXPORT_FILE_NAME = 'category_sums.csv';
