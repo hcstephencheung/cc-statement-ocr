@@ -15,7 +15,6 @@ class Completions:
         self.client = OpenAI(
             api_key=os.environ.get("OPEN_AI_API_KEY")
         )
-        self.classified_categories_cached = {}
 
     def ask(self, input, text, reasoning, tools, temperature=0.1, max_output_tokens=2048, top_p=1, store=True):
         response = self.client.responses.parse(
