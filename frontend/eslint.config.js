@@ -1,6 +1,7 @@
 import importPlugin from 'eslint-plugin-import';
 import tseslint from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
+import reactHooks from 'eslint-plugin-react-hooks';
 
 export default [
   {
@@ -16,10 +17,12 @@ export default [
     plugins: {
       '@typescript-eslint': tseslint,
       import: importPlugin,
+      'react-hooks': reactHooks
     },
     rules: {
       // TypeScript recommended rules
       ...tseslint.configs.recommended.rules,
+      'react-hooks/exhaustive-deps': 'warn',
     },
     settings: {
       'import/resolver': {

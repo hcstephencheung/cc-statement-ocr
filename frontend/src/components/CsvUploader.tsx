@@ -6,7 +6,7 @@ interface CsvUploaderProps {
     handleCsvFileChanged: (event: React.ChangeEvent<HTMLInputElement>) => void
 }
 const CsvUploader = React.forwardRef<HTMLInputElement, CsvUploaderProps>(({
-    handleCsvFileChanged
+    handleCsvFileChanged,
 }, ref) => {
 
     const [file, setFile] = useState<File | null>(null);

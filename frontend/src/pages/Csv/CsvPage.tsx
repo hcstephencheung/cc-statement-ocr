@@ -22,7 +22,6 @@ const CsvPage = () => {
     const resetEverything = () => {
         setLineItems([]);
         setSumByCategory({});
-        fileInputRef.current!.value = '';
     };
 
     const handleCsvFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
