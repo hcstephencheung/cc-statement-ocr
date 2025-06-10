@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Table } from '@radix-ui/themes';
 import TypeableSelect, { TypeableSelectOption } from './TypeableSelect';
+import { CategorizedLineItem } from '../pages/Csv/types';
 
 interface LineItem {
     date: string;
@@ -14,7 +15,14 @@ const hasCategory = (lineItem: LineItem): boolean => {
     return !!(lineItem.category && lineItem.category !== '');
 }
 
-const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => {
+interface LineItemTableProps {
+    lineItems: LineItem[] | CategorizedLineItem[]
+    updateLineItem?: (newLineItem: CategorizedLineItem, idx: number) => void
+}
+const LineItemTable = ({
+    lineItems,
+    updateLineItem
+}: LineItemTableProps) => {
     const [allOptions, setAllOptions] = useState<TypeableSelectOption[]>([]);
 
     useEffect(() => {
@@ -31,9 +39,15 @@ const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => {
         setAllOptions(options);
     }, []);
 
-    const handleSelectedCategoryChange = useCallback((value: string) => {
-        console.log(`changed to ${value}`);
-    }, [])
+    const handleSelectedCategoryChange = useCallback((lineItem: CategorizedLineItem, idx: number, value: string) => {
+        const newLineItem = {
+            ...lineItem,
+            category: value
+        };
+        if (typeof updateLineItem === 'function') {
+            updateLineItem(newLineItem, idx)
+        }
+    }, [updateLineItem])
 
     return (
         <Table.Root>
@@ -58,7 +72,7 @@ const LineItemTable: React.FC<{ lineItems: LineItem[] }> = ({ lineItems }) => {
                                 options={allOptions}
                                 defaultOption={{ label: lineItem.category, value: lineItem.category } as TypeableSelectOption}
                                 onOptionsChange={handleOnOptionsChange}
-                                onSelectedOptionChange={handleSelectedCategoryChange}
+                                onSelectedOptionChange={(value) => handleSelectedCategoryChange(lineItem as CategorizedLineItem, idx, value)}
                             />
                         </Table.Cell>}
                     </Table.Row>

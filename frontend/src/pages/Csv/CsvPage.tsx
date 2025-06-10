@@ -4,13 +4,14 @@ import { FilePlusIcon, MagicWandIcon, ReloadIcon } from '@radix-ui/react-icons';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
 import DataTable from '../../components/DataTable';
-import { DEFAULT_DESIRED_CATEGORIES, Glossary, LineItem } from './types';
+import { CategorizedLineItem, DEFAULT_DESIRED_CATEGORIES, Glossary, LineItem } from './types';
 import { BankRadioCard, Banks, CsvTransformerByBank } from '../../components/BankRadioCard';
 import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv, sanitizeLineItems, santizeClassifiedItems, buildGlossary } from './utils';
 import CsvUploader from '../../components/CsvUploader';
 
 const CsvPage = () => {
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
+    const [categorizedLineItems, setCategorizedLineItems] = useState<CategorizedLineItem[]>([]);
     const [sumByCategory, setSumByCategory] = useState<Record<string, number>>({});
     const [classifying, setClassifying] = useState<boolean>(false);
     const [desiredCategories, setDesiredCategories] = useState<string[]>(DEFAULT_DESIRED_CATEGORIES);
@@ -22,6 +23,7 @@ const CsvPage = () => {
 
     const resetEverything = () => {
         setLineItems([]);
+        setCategorizedLineItems([]);
         setSumByCategory({});
     };
 
@@ -65,23 +67,41 @@ const CsvPage = () => {
             const classifiedData = await result.json();
             const sanitizedClassifiedItems = santizeClassifiedItems(classifiedData.classified_items);
             const taggedLineItems = tagLineItemsWithClassification(sanitizedLineItems, sanitizedClassifiedItems);
-            setLineItems(taggedLineItems);
 
-            // set the glossary
-            setGlossary(buildGlossary(taggedLineItems));
-
-            // sort and sum the categories
-            const summedCategories = sumCategories(taggedLineItems);
-            const summedCategoriesWithEmptyEntries = desiredCategories.reduce((acc, category) => {
-                acc[category] = summedCategories[category] || 0; // Ensure all desired categories are present
-                return acc;
-            }, {} as Record<string, number>);
-            const roundedSummedCategories = sortAndSumCategories(summedCategoriesWithEmptyEntries);
-
-            setSumByCategory(roundedSummedCategories);
+            setCategorizedLineItems(taggedLineItems);
         }
         setClassifying(false);
-    }
+    };
+
+    const updateLineItem = React.useCallback((newLineItem: CategorizedLineItem, idx: number) => {
+        const previousLineItem = categorizedLineItems[idx];
+        if (!previousLineItem.category || !newLineItem.category) {
+            console.error('Cannot update categorized line item without category');
+            return;
+        }
+
+        const newCategorizedLineItems = [...categorizedLineItems];
+        newCategorizedLineItems[idx] = newLineItem;
+        setCategorizedLineItems(newCategorizedLineItems);
+    }, [categorizedLineItems]);
+
+
+    // Effect to update data points when categorizedLineItems changes
+    // could change from AI categorization or user updates
+    React.useEffect(() => {
+        if (categorizedLineItems.length === 0 || desiredCategories.length === 0) {
+            return;
+        }
+
+        // set the glossary
+        setGlossary(buildGlossary(categorizedLineItems));
+
+        // sort and sum the categories
+        const summedCategories = sumCategories(categorizedLineItems);
+        const roundedSummedCategories = sortAndSumCategories(summedCategories);
+
+        setSumByCategory(roundedSummedCategories);
+    }, [categorizedLineItems, desiredCategories])
 
     return (
         <div className="p-4">
@@ -131,7 +151,7 @@ const CsvPage = () => {
                             </Tabs.List>
 
                             <Tabs.Content value="LineItems">
-                                <LineItemTable lineItems={lineItems} />
+                                <LineItemTable lineItems={categorizedLineItems} updateLineItem={updateLineItem} />
                             </Tabs.Content>
 
                             <Tabs.Content value="SumByCategory">

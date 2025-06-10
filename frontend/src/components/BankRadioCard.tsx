@@ -1,4 +1,4 @@
-import { RadioCards, Text } from "@radix-ui/themes";
+import { Heading, RadioCards, Text } from "@radix-ui/themes";
 import React, { Dispatch, SetStateAction } from "react";
 import { transformScotiabankCsvToLineItem, transformTdCsvToLineItem, transformCibcCsvToLineItem } from "../pages/Csv/utils";
 
@@ -28,20 +28,23 @@ export const BankRadioCard = ({
 }: BankRadioCardProps) => {
     const handleBankChange = React.useCallback((value: Banks) => {
         setBank(value);
-    }, []);
+    }, [setBank]);
 
     return (
-        <RadioCards.Root
-            defaultValue={bank}
-            onValueChange={handleBankChange}
-            variant="classic"
-            columns={`${Object.entries(Banks).length}`}
-        >
-            {Object.entries(Banks).map(([_, bankName], index) => (
-                <RadioCards.Item key={index} value={bankName} className="w-full">
-                    <Text color={BankColors[bankName]}>{bankName}</Text>
-                </RadioCards.Item>
-            ))}
-        </RadioCards.Root>
+        <>
+            <Heading as="h2" my="4">Select the bank before uploading CSV</Heading>
+            <RadioCards.Root
+                defaultValue={bank}
+                onValueChange={handleBankChange}
+                variant="classic"
+                columns={`${Object.entries(Banks).length}`}
+            >
+                {Object.entries(Banks).map(([_, bankName], index) => (
+                    <RadioCards.Item key={index} value={bankName} className="w-full">
+                        <Text color={BankColors[bankName]}>{bankName}</Text>
+                    </RadioCards.Item>
+                ))}
+            </RadioCards.Root>
+        </>
     )
 }

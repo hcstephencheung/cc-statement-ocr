@@ -53,9 +53,12 @@ const TypeableSelect = ({
             </TextField.Root>
 
             <Select.Content position="popper" side="bottom">
-                {options.map(option => {
+                {options.map((option, idx) => {
                     return (
-                        <Select.Item value={option.value}>{option.label}</Select.Item>
+                        <Select.Item
+                            value={option.value}
+                            key={`${option.value}-${idx}`}
+                        >{option.label}</Select.Item>
                     )
                 })}
             </Select.Content>
