@@ -1,4 +1,4 @@
-import { ClassifiedItem, LineItem, UNCATEGORIZED } from "../types";
+import { CategorizedLineItem, ClassifiedItem, LineItem, UNCATEGORIZED } from "../types";
 
 export const _removeQuotes = (str: string): string => {
     const result = str.replace(/^\"/, '').replace(/\"$/, ''); // Clean up quotes if present
@@ -60,7 +60,8 @@ export const transformScotiabankCsvToLineItem = (csvData: string[][]): LineItem[
         if (row.length >= 6) {
             const date = _removeQuotes(row[1]?.replace(/-/g, ''));
             const description = _removeQuotes(row[2]?.trim());
-            const subDescription = _removeQuotes(row[3]?.trim());
+            // in most cases providing more info to AI results in worse classification
+            // const subDescription = _removeQuotes(row[3]?.trim());
             const debit = row[5]?.toLowerCase().includes('debit');
             const amount = parseFloat(row[6]?.replace(/[^0-9.-]+/g, ''));
 
@@ -72,7 +73,7 @@ export const transformScotiabankCsvToLineItem = (csvData: string[][]): LineItem[
     }, [] as LineItem[]);
 };
 
-export const tagLineItemsWithClassification = (lineItems: LineItem[], classifiedData: Record<string, string>): LineItem[] => {
+export const tagLineItemsWithClassification = (lineItems: LineItem[], classifiedData: Record<string, string>): CategorizedLineItem[] => {
     return lineItems.map(item => {
         return {
             ...item,
@@ -81,7 +82,7 @@ export const tagLineItemsWithClassification = (lineItems: LineItem[], classified
     });
 }
 
-export const sumCategories = (lineItems: Array<LineItem & { category: string }>): Record<string, number> => {
+export const sumCategories = (lineItems: Array<CategorizedLineItem>): Record<string, number> => {
     return lineItems.reduce((acc, item) => {
         const category = item.category;
         acc[category] = (acc[category] || 0) + (item.amount * (item.debit ? 1 : -1));
