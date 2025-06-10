@@ -9,7 +9,6 @@ logger = setup_logger()
 class CsvProcessorPipeline:
     def __init__(self):
         self.gpt_client = Completions(model="gpt-4.1")
-        self.descriptions_categories_cache = {}
 
     def preprocess_descriptions(self, requested_descriptions):
         """
@@ -19,37 +18,25 @@ class CsvProcessorPipeline:
             return []
 
         deduplicated_descriptions = list(set(requested_descriptions))
-        uncached_descriptions = []
-        for descriptions in deduplicated_descriptions:
-            if descriptions not in self.descriptions_categories_cache:
-                uncached_descriptions.append(descriptions)
-        logger.info(f'Uncached descriptions: {uncached_descriptions}')
-        return uncached_descriptions
+        return deduplicated_descriptions
     
     def postprocess_descriptions(self, classified_categories_descriptions: ClassifiedCategoryDescriptions):
         """
         Add newly processed categories to the cache.
         """
-        logs = []
-        for category, descriptions in classified_categories_descriptions.items():
-            for description in descriptions:
-                logs.append(f'{description["name"]} was categorized as {category} at {description["confidence"]}. Reason: {description["reason"]}')
-        logger.info('Post processed CSV items: ', logs)
-        
+        logs = ''
+        descriptions_categories_dict = {}
         for category, descriptions in classified_categories_descriptions.items():
             for description in descriptions:
                 description_name = f'{description["name"]}' if description['name'] else None
-               
+
                 if description_name is not None:
-                    if hasattr(self.descriptions_categories_cache, description_name):
-                        if self.descriptions_categories_cache[description_name] != category:
-                            logger.info(f'Warning: description {description_name} already exists in cache. Overwritten to {category}')
+                    descriptions_categories_dict[description_name] = category
+                    logs = f'{logs}\n{description_name} was categorized as {category} at {description["confidence"]}. Reason: {description["reason"]}'
 
-                # update the cache with new descriptions
-                self.descriptions_categories_cache[description_name] = category
+        logger.info(f'Post processed CSV items: \n{logs}')
+        return descriptions_categories_dict
 
-        logger.info(f'Updated descriptions cache: {self.descriptions_categories_cache}')
-        return self.descriptions_categories_cache
     
     def classify_csv_items(self, categories: str, descriptions: str) -> ClassifiedDescriptionsCategories:
         """
@@ -60,8 +47,8 @@ class CsvProcessorPipeline:
         unclassified_descriptions = self.preprocess_descriptions(descriptions)
 
         if len(unclassified_descriptions) == 0:
-            # all items were cached, skip gpt
-            return self.descriptions_categories_cache
+            # return early if empty, skip gpt
+            return {}
 
         prompt, text_format = build_classify_csv_prompt(
             categories=deduplicated_categories,
