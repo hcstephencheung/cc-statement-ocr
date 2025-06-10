@@ -17,7 +17,7 @@ class CsvProcessorPipeline:
         if not requested_descriptions:
             return []
 
-        deduplicated_descriptions = list(set(requested_descriptions))
+        deduplicated_descriptions = list(set(desc.lower() for desc in requested_descriptions))
         return deduplicated_descriptions
     
     def postprocess_descriptions(self, classified_categories_descriptions: ClassifiedCategoryDescriptions):
@@ -27,12 +27,14 @@ class CsvProcessorPipeline:
         logs = ''
         descriptions_categories_dict = {}
         for category, descriptions in classified_categories_descriptions.items():
+            sanitized_category = category.lower()
             for description in descriptions:
-                description_name = f'{description["name"]}' if description['name'] else None
+                description_name = f'{description["name"]}' if description['name'] else ''
+                sanitized_description_name = description_name.lower();
 
-                if description_name is not None:
-                    descriptions_categories_dict[description_name] = category
-                    logs = f'{logs}\n{description_name} was categorized as {category} at {description["confidence"]}. Reason: {description["reason"]}'
+                if sanitized_description_name is not '':
+                    descriptions_categories_dict[sanitized_description_name] = sanitized_category
+                    logs = f'{logs}\n{sanitized_description_name} was categorized as {sanitized_category} at {description["confidence"]}. Reason: {description["reason"]}'
 
         logger.info(f'Post processed CSV items: \n{logs}')
         return descriptions_categories_dict
@@ -49,6 +51,9 @@ class CsvProcessorPipeline:
         if len(unclassified_descriptions) == 0:
             # return early if empty, skip gpt
             return {}
+
+        logger.info(f'Input descriptions {unclassified_descriptions}')
+        logger.info(f'Input categories {deduplicated_categories}')
 
         prompt, text_format = build_classify_csv_prompt(
             categories=deduplicated_categories,

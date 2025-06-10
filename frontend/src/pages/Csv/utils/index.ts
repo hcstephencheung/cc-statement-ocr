@@ -1,4 +1,4 @@
-import { LineItem } from "../types";
+import { ClassifiedItem, LineItem, UNCATEGORIZED } from "../types";
 
 export const _removeQuotes = (str: string): string => {
     const result = str.replace(/^\"/, '').replace(/\"$/, ''); // Clean up quotes if present
@@ -76,14 +76,14 @@ export const tagLineItemsWithClassification = (lineItems: LineItem[], classified
     return lineItems.map(item => {
         return {
             ...item,
-            category: classifiedData[item.description] || 'Uncategorized' // Default to 'Uncategorized' if no classification found
+            category: classifiedData[item.description] || UNCATEGORIZED // AI sometimes doesn't classify uncategorized by default
         };
     });
 }
 
-export const sumCategories = (lineItems: Array<LineItem & { category?: string }>): Record<string, number> => {
+export const sumCategories = (lineItems: Array<LineItem & { category: string }>): Record<string, number> => {
     return lineItems.reduce((acc, item) => {
-        const category = item.category || 'Uncategorized';
+        const category = item.category;
         acc[category] = (acc[category] || 0) + (item.amount * (item.debit ? 1 : -1));
         return acc;
     }, {} as Record<string, number>);
@@ -120,4 +120,20 @@ export const exportSumsToCsv = (sumByCategory: Record<string, number>, filename 
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+export const sanitizeLineItems = (lineItems: LineItem[]) => {
+    return lineItems.map(lineItem => ({
+        ...lineItem,
+        description: lineItem.description.toLowerCase()
+    }))
+}
+
+export const santizeClassifiedItems = (classifiedItems: ClassifiedItem) => {
+    const sanitizedItems: Record<string, string> = {};
+    Object.entries(classifiedItems).forEach(([description, category]) => {
+        sanitizedItems[`${description.toLowerCase()}`] = category.toLowerCase();
+    });
+
+    return sanitizedItems;
 }

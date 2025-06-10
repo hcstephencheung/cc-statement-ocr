@@ -22,7 +22,8 @@ const DesiredCategories: React.FC<{
     };
 
     const addCategory = () => {
-        setCategories(Array.from(new Set([...categories, input.trim()])));
+        const sanitizedInput = input.trim().toLowerCase();
+        setCategories(Array.from(new Set([...categories, sanitizedInput])));
         setInput('');
     }
 

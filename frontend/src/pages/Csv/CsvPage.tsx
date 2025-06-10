@@ -6,7 +6,7 @@ import LineItemTable from '../../components/LineItemTable';
 import DataTable from '../../components/DataTable';
 import { DEFAULT_DESIRED_CATEGORIES, LineItem } from './types';
 import { BankRadioCard, Banks, CsvTransformerByBank } from '../../components/BankRadioCard';
-import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv } from './utils';
+import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv, sanitizeLineItems, santizeClassifiedItems } from './utils';
 import CsvUploader from '../../components/CsvUploader';
 
 const CsvPage = () => {
@@ -42,9 +42,11 @@ const CsvPage = () => {
     const handleClassifyCsvClick = async () => {
         setClassifying(true);
 
+        const sanitizedLineItems = sanitizeLineItems(lineItems);
+
         // Prepare req data
         const requestBody = {
-            line_items: lineItems,
+            line_items: sanitizedLineItems,
             desired_categories: desiredCategories,
         }
 
@@ -58,8 +60,8 @@ const CsvPage = () => {
         });
         if (result.ok) {
             const classifiedData = await result.json();
-            // TODO: classifiedData is { [description]: category } currently, maybe add a a debug to include original confidence
-            const taggedLineItems = tagLineItemsWithClassification(lineItems, classifiedData.classified_items);
+            const sanitizedClassifiedItems = santizeClassifiedItems(classifiedData.classified_items);
+            const taggedLineItems = tagLineItemsWithClassification(sanitizedLineItems, sanitizedClassifiedItems);
             setLineItems(taggedLineItems);
 
             // sort and sum the categories
@@ -103,7 +105,9 @@ const CsvPage = () => {
             {lineItems.length > 0 && (
                 <Button
                     color="indigo" variant="soft" radius="large"
-                    onClick={handleClassifyCsvClick}>
+                    onClick={handleClassifyCsvClick}
+                    disabled={classifying}
+                >
                     <Spinner loading={classifying}><MagicWandIcon /></Spinner> Auto Categorize
                 </Button>
             )}

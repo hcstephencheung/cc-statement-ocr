@@ -24,10 +24,10 @@ def build_classify_csv_prompt(
     prompt = f"""
         Imagine you are a general accountant and I am a Canadian consumer living in Vancouver, B.C. I will provide you with 2 arrays. The first array will include a list of categories. The second array will include a list of financial statement descriptions. You must do the following:
         - categorize each description to the predefined category as best as you can
-        - if a description doesn't belong to any predefined category, categorize it as "Uncategorized"
+        - if a description doesn't belong to any predefined category, categorize it as "uncategorized"
         - the output should be a JSON object with the following shape:
         - {output_shape}
-        - any item that has confidence level lower than 0.6 should be categorized as "Uncategorized"
+        - any item that has confidence level lower than 0.6 should be categorized as "uncategorized"
         - summarize your reasoning for the confidence level in a single sentence
         - do not assume order specifics, categorize solely based on description
         - do not make up any descriptions
