@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Heading, Text, Button, Flex, Spinner, Tabs, Card, RadioGroup, RadioCards, Box } from '@radix-ui/themes';
-import { MagicWandIcon, UploadIcon } from '@radix-ui/react-icons';
+import { FilePlusIcon, MagicWandIcon, UploadIcon } from '@radix-ui/react-icons';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
 import DataTable from '../../components/DataTable';
@@ -29,6 +29,39 @@ const transformTdCsvToLineItem = (csvData: string[][]): LineItem[] => {
 
             if (date && description && !isNaN(amount)) {
                 result.push({ date, description, debit, amount });
+            }
+        }
+        return result;
+    }, [] as LineItem[]);
+};
+
+const transformCibcCsvToLineItem = (csvData: string[][]): LineItem[] => {
+    return csvData.reduce((result, row) => {
+        if (row.length >= 5) {
+            if (row.length === 5) {
+                const date = _removeQuotes(row[0]?.replace(/-/g, ''));
+                const description = _removeQuotes(row[1]?.trim());
+                const debit = _removeQuotes(row[2]?.trim()) !== '';
+                const amountIdx = debit ? 2 : 3;
+                const amount = parseFloat(row[amountIdx]);
+
+                if (date && description && !isNaN(amount)) {
+                    result.push({ date, description, debit, amount });
+                }
+            }
+            else if (row.length === 6) {
+                // description contained a comma
+                const date = _removeQuotes(row[0]?.replace(/-/g, ''));
+                const firstDescription = _removeQuotes(row[1]?.trim());
+                const secondDescription = _removeQuotes(row[2]?.trim());
+                const description = `${firstDescription} ${secondDescription}`;
+                const debit = _removeQuotes(row[3]?.trim()) !== '';
+                const amountIdx = debit ? 3 : 4;
+                const amount = parseFloat(row[amountIdx]);
+
+                if (date && description && !isNaN(amount)) {
+                    result.push({ date, description, debit, amount });
+                }
             }
         }
         return result;
@@ -64,7 +97,7 @@ const tagLineItemsWithClassification = (lineItems: LineItem[], classifiedData: R
 const sumCategories = (lineItems: Array<LineItem & { category?: string }>): Record<string, number> => {
     return lineItems.reduce((acc, item) => {
         const category = item.category || 'Uncategorized';
-        acc[category] = (acc[category] || 0) + item.amount;
+        acc[category] = (acc[category] || 0) + (item.amount * (item.debit ? 1 : -1));
         return acc;
     }, {} as Record<string, number>);
 };
@@ -86,19 +119,38 @@ const sortAndSumCategories = (summedCategories: Record<string, number>): Record<
     return roundedSummedCategories;
 }
 
+const EXPORT_FILE_NAME = 'category_sums.csv';
+const exportSumsToCsv = (sumByCategory: Record<string, number>, filename = EXPORT_FILE_NAME) => {
+    const csvContent = Object.entries(sumByCategory)
+        .map(([category, sum]) => `${category},${sum.toFixed(2)}`)
+        .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
 enum Banks {
     SCOTIABANK = 'Scotiabank',
     TD = 'TD',
+    CIBC = 'CIBC'
 }
 const BankColors = {
     [Banks.SCOTIABANK]: 'red',
     [Banks.TD]: 'green',
+    [Banks.CIBC]: 'crimson'
 } as const;
 const CsvTransformerByBank = {
     [Banks.SCOTIABANK]: transformScotiabankCsvToLineItem,
     [Banks.TD]: transformTdCsvToLineItem,
+    [Banks.CIBC]: transformCibcCsvToLineItem
 }
-const BANK_SELECTION = [Banks.SCOTIABANK, Banks.TD] as const;
+const BANK_SELECTION = [Banks.SCOTIABANK, Banks.TD, Banks.CIBC] as const;
 
 const DEFAULT_DESIRED_CATEGORIES = ["Mortgage", "Strata Fees", "Storage Rental", "Electric Bill", "Internet Bill", "Property Tax", "Home Insurance", "Misc. Home improvement", "Food", "debit", "Gimbap Insurance", "Pet food", "Vet", "EV charging+ parking", "Car insurance", "Car maintenance", "Other", "Entertainment", "Vacation planning", "shopping", "Uncategorized"]
 const CsvPage = () => {
@@ -252,6 +304,12 @@ const CsvPage = () => {
 
                             <Tabs.Content value="SumByCategory">
                                 <div className="my-4">
+                                    <Button
+                                        onClick={() => exportSumsToCsv(sumByCategory)}
+                                        my="4"
+                                    >
+                                        <FilePlusIcon /> Export to CSV
+                                    </Button>
                                     <DataTable data={sumByCategory} />
                                 </div>
                             </Tabs.Content>
