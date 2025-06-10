@@ -20,9 +20,6 @@ export default [
     rules: {
       // TypeScript recommended rules
       ...tseslint.configs.recommended.rules,
-      // React recommended rules (manually add if needed)
-      // 'react/jsx-uses-react': 'off',
-      // 'react/react-in-jsx-scope': 'off',
     },
     settings: {
       'import/resolver': {
@@ -30,7 +27,6 @@ export default [
           paths: ['src'],
           extensions: ['.js', '.jsx', '.ts', '.tsx'],
         },
-        // Removed typescript: {} as it is not supported in flat config
       },
     },
   },
