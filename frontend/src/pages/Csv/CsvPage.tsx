@@ -4,12 +4,11 @@ import { FilePlusIcon, MagicWandIcon, ReloadIcon } from '@radix-ui/react-icons';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
 import DataTable from '../../components/DataTable';
-import { LineItem } from './types';
+import { DEFAULT_DESIRED_CATEGORIES, LineItem } from './types';
 import { BankRadioCard, Banks, CsvTransformerByBank } from '../../components/BankRadioCard';
 import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv } from './utils';
 import CsvUploader from '../../components/CsvUploader';
 
-const DEFAULT_DESIRED_CATEGORIES = ["Mortgage", "Strata Fees", "Storage Rental", "Electric Bill", "Internet Bill", "Property Tax", "Home Insurance", "Misc. Home improvement", "Food", "debit", "Gimbap Insurance", "Pet food", "Vet", "EV charging+ parking", "Car insurance", "Car maintenance", "Other", "Entertainment", "Vacation planning", "shopping", "Uncategorized"]
 const CsvPage = () => {
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
     const [sumByCategory, setSumByCategory] = useState<Record<string, number>>({});
@@ -17,7 +16,6 @@ const CsvPage = () => {
     const [desiredCategories, setDesiredCategories] = useState<string[]>(DEFAULT_DESIRED_CATEGORIES);
     const [bank, setBank] = useState<Banks>(Banks.SCOTIABANK)
     const fileInputRef = React.useRef<HTMLInputElement | null>(null);
-
 
     const resetEverything = () => {
         setLineItems([]);

@@ -1,3 +1,5 @@
+import { LineItem } from "../types";
+
 export const _removeQuotes = (str: string): string => {
     const result = str.replace(/^\"/, '').replace(/\"$/, ''); // Clean up quotes if present
     return result
