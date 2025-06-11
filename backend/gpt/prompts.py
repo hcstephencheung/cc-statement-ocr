@@ -70,7 +70,7 @@ def build_classify_csv_prompt(
                 "additionalProperties": False,
                 "required": list(output_schema.keys()),
             },
-            "strict": True
+            "strict": False  # TODO: parallelize the call instead
         }
     }
 

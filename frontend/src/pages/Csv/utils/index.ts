@@ -1,4 +1,4 @@
-import { CategorizedLineItem, ClassifiedItem, Glossary, LineItem, UNCATEGORIZED } from "../types";
+import { CategorizedLineItem, ClassifiedItem, FILE_DELIMITER, Glossary, LineItem, UNCATEGORIZED } from "../types";
 
 export const _removeQuotes = (str: string): string => {
     const result = str.replace(/^\"/, '').replace(/\"$/, ''); // Clean up quotes if present
@@ -146,3 +146,42 @@ export const santizeClassifiedItems = (classifiedItems: ClassifiedItem) => {
 
     return sanitizedItems;
 }
+
+export const saveObjectAsTextFile = (obj: Record<string, string>, filename = 'smartbud_glossary.txt') => {
+    // Validation: not empty, all keys and values are strings
+    const keys = Object.keys(obj);
+    if (keys.length === 0) {
+        throw new Error('Cannot save: object is empty.');
+    }
+    for (const key of keys) {
+        if (typeof key !== 'string' || typeof obj[key] !== 'string') {
+            throw new Error(`Invalid key or value: key="${key}", value="${obj[key]}". Both must be strings.`);
+        }
+    }
+    const content = Object.entries(obj)
+        .map(([key, value]) => `${key}${FILE_DELIMITER}${value}`)
+        .join('\n');
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+export const loadTextFileAsObject = async (file: File): Promise<Record<string, string>> => {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter(Boolean);
+    const obj: Record<string, string> = {};
+    for (const line of lines) {
+        const [key, value, ...rest] = line.split(FILE_DELIMITER);
+        if (rest.length > 0 || key === undefined || value === undefined) {
+            throw new Error(`Invalid line in glossary file: "${line}"`);
+        }
+        obj[key.trim().toLowerCase()] = value.trim().toLowerCase();
+    }
+    return obj;
+};

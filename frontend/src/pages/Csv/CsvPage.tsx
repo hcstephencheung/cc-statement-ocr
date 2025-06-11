@@ -1,25 +1,30 @@
 import React, { useState } from 'react';
-import { Heading, Button, Spinner, Tabs, Box } from '@radix-ui/themes';
+import { Heading, Button, Spinner, Tabs, Box, Flex } from '@radix-ui/themes';
 import { FilePlusIcon, MagicWandIcon, ReloadIcon } from '@radix-ui/react-icons';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
 import DataTable from '../../components/DataTable';
-import { CategorizedLineItem, DEFAULT_DESIRED_CATEGORIES, Glossary, LineItem } from './types';
+import { BB_CATEGORIES, CategorizedLineItem, DEFAULT_DESIRED_CATEGORIES, Glossary, LineItem } from './types';
 import { BankRadioCard, Banks, CsvTransformerByBank } from '../../components/BankRadioCard';
-import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv, sanitizeLineItems, santizeClassifiedItems, buildGlossary } from './utils';
-import CsvUploader from '../../components/CsvUploader';
+import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv, sanitizeLineItems, santizeClassifiedItems, buildGlossary, loadTextFileAsObject } from './utils';
+import GlossaryTab from '../../components/GlossaryTab';
+import FileUploader from '../../components/FileUploader';
 
 const CsvPage = () => {
+    const params = new URLSearchParams(window.location.search);
+    const isBB = params.get('bb');
+
+    const initialCategories = isBB !== null ? BB_CATEGORIES : DEFAULT_DESIRED_CATEGORIES;
     const [lineItems, setLineItems] = useState<LineItem[]>([]);
     const [categorizedLineItems, setCategorizedLineItems] = useState<CategorizedLineItem[]>([]);
     const [sumByCategory, setSumByCategory] = useState<Record<string, number>>({});
     const [classifying, setClassifying] = useState<boolean>(false);
-    const [desiredCategories, setDesiredCategories] = useState<string[]>(DEFAULT_DESIRED_CATEGORIES);
+    const [desiredCategories, setDesiredCategories] = useState<string[]>(initialCategories);
     const [bank, setBank] = useState<Banks>(Banks.SCOTIABANK)
     const [glossary, setGlossary] = useState<Glossary>({})
 
-
-    const fileInputRef = React.useRef<HTMLInputElement | null>(null);
+    const csvFileInputRef = React.useRef<HTMLInputElement | null>(null);
+    const glossaryFileInputRef = React.useRef<HTMLInputElement | null>(null);
 
     const resetEverything = () => {
         setLineItems([]);
@@ -28,6 +33,8 @@ const CsvPage = () => {
     };
 
     const handleCsvFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        resetEverything();
+
         const selectedFile = event.target.files?.[0];
         if (selectedFile && selectedFile.type === 'text/csv') {
             const reader = new FileReader();
@@ -43,6 +50,32 @@ const CsvPage = () => {
             console.error('Please upload a valid CSV file.');
         }
     };
+
+    const handleGlossaryFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = event.target.files?.[0];
+        if (selectedFile && selectedFile.type === 'text/plain') {
+            const uploadedGlossary = await loadTextFileAsObject(selectedFile);
+            // merge the uploaded glossary with current
+            const newGlossary = Object.assign({}, glossary, uploadedGlossary);
+
+            const sanitizedLineItems = sanitizeLineItems(lineItems);
+            const sanitizedClassifiedItems = santizeClassifiedItems(newGlossary);
+            const taggedLineItems = tagLineItemsWithClassification(sanitizedLineItems, sanitizedClassifiedItems);
+            const previousCategories = Object.entries(sanitizedClassifiedItems).map(([_, category]) => category);
+
+            const newCategorySet = new Set<string>();
+            for (const category of [...desiredCategories, ...previousCategories]) {
+                newCategorySet.add(category);
+            }
+            const newCategories = Array.from(newCategorySet);
+
+            setDesiredCategories(newCategories);
+            setGlossary(sanitizedClassifiedItems);
+            setCategorizedLineItems(taggedLineItems);
+        } else {
+            console.error('Please upload a valid txt file.');
+        }
+    }
 
     const handleClassifyCsvClick = async () => {
         setClassifying(true);
@@ -65,8 +98,12 @@ const CsvPage = () => {
         });
         if (result.ok) {
             const classifiedData = await result.json();
-            const sanitizedClassifiedItems = santizeClassifiedItems(classifiedData.classified_items);
-            const taggedLineItems = tagLineItemsWithClassification(sanitizedLineItems, sanitizedClassifiedItems);
+            const aiClassifiedItems = santizeClassifiedItems(classifiedData.classified_items);
+
+            // merge ai classified items to existing glossary if we already have one
+            const newGlossary = Object.assign({}, glossary, aiClassifiedItems);
+
+            const taggedLineItems = tagLineItemsWithClassification(sanitizedLineItems, newGlossary);
 
             setCategorizedLineItems(taggedLineItems);
         }
@@ -101,7 +138,7 @@ const CsvPage = () => {
         const roundedSummedCategories = sortAndSumCategories(summedCategories);
 
         setSumByCategory(roundedSummedCategories);
-    }, [categorizedLineItems, desiredCategories])
+    }, [categorizedLineItems, desiredCategories]);
 
     return (
         <div className="p-4">
@@ -117,26 +154,41 @@ const CsvPage = () => {
                 </Box>
 
                 <Box my="4">
-                    <CsvUploader
-                        handleCsvFileChanged={handleCsvFileChange}
-                        ref={fileInputRef}
+                    <FileUploader
+                        ref={csvFileInputRef}
+                        acceptedFileType=".csv"
+                        handleFileChanged={handleCsvFileChange}
+                        uploadBtnText="Upload CSV"
+                        showUploadedFileName
                     />
                 </Box>
             </Box>
 
-            <Button onClick={() => resetEverything()}>
-                <ReloadIcon /> Start over
-            </Button>
-
-            {lineItems.length > 0 && (
-                <Button
-                    color="indigo" variant="soft" radius="large"
-                    onClick={handleClassifyCsvClick}
-                    disabled={classifying}
-                >
-                    <Spinner loading={classifying}><MagicWandIcon /></Spinner> Auto Categorize
+            <Flex gapX="2">
+                <Button onClick={() => resetEverything()} color="tomato">
+                    <ReloadIcon /> Start over
                 </Button>
-            )}
+                {lineItems.length > 0 && (
+                    <>
+                        <Button
+                            color="indigo" variant="soft" radius="large"
+                            onClick={handleClassifyCsvClick}
+                            disabled={classifying}
+                        >
+                            <Spinner loading={classifying}><MagicWandIcon /></Spinner> AI Categorize
+                        </Button>
+
+                        <FileUploader
+                            disabled={classifying}
+                            ref={glossaryFileInputRef}
+                            acceptedFileType=".txt"
+                            handleFileChanged={handleGlossaryFileChange}
+                            uploadBtnText="Use previous definitions"
+                            showUploadedFileName={false}
+                        />
+                    </>
+                )}
+            </Flex>
 
             {/* Summed categories */}
             {Object.keys(sumByCategory).length <= 0 ?
@@ -155,7 +207,7 @@ const CsvPage = () => {
                             </Tabs.Content>
 
                             <Tabs.Content value="SumByCategory">
-                                <div className="my-4">
+                                <Box>
                                     <Button
                                         onClick={() => exportSumsToCsv(sumByCategory)}
                                         my="4"
@@ -163,13 +215,11 @@ const CsvPage = () => {
                                         <FilePlusIcon /> Export to CSV
                                     </Button>
                                     <DataTable data={sumByCategory} />
-                                </div>
+                                </Box>
                             </Tabs.Content>
 
                             <Tabs.Content value="Glossary">
-                                <div className="my-4">
-                                    <DataTable data={glossary} />
-                                </div>
+                                <GlossaryTab glossary={glossary} />
                             </Tabs.Content>
                         </Tabs.Root>
                     </div>
