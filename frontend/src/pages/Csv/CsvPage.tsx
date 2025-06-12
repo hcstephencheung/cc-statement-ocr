@@ -9,6 +9,7 @@ import { BankRadioCard, Banks, CsvTransformerByBank } from '../../components/Ban
 import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, exportSumsToCsv, sanitizeLineItems, santizeClassifiedItems, buildGlossary, loadTextFileAsObject } from './utils';
 import GlossaryTab from '../../components/GlossaryTab';
 import FileUploader from '../../components/FileUploader';
+import isEqual from 'lodash/isEqual';
 
 const CsvPage = () => {
     const params = new URLSearchParams(window.location.search);
@@ -61,8 +62,9 @@ const CsvPage = () => {
             const sanitizedLineItems = sanitizeLineItems(lineItems);
             const sanitizedClassifiedItems = santizeClassifiedItems(newGlossary);
             const taggedLineItems = tagLineItemsWithClassification(sanitizedLineItems, sanitizedClassifiedItems);
-            const previousCategories = Object.entries(sanitizedClassifiedItems).map(([_, category]) => category);
+            setCategorizedLineItems(taggedLineItems);
 
+            const previousCategories = Object.entries(sanitizedClassifiedItems).map(([_, category]) => category);
             const newCategorySet = new Set<string>();
             for (const category of [...desiredCategories, ...previousCategories]) {
                 newCategorySet.add(category);
@@ -70,8 +72,7 @@ const CsvPage = () => {
             const newCategories = Array.from(newCategorySet);
 
             setDesiredCategories(newCategories);
-            setGlossary(sanitizedClassifiedItems);
-            setCategorizedLineItems(taggedLineItems);
+            setGlossary(newGlossary);
         } else {
             console.error('Please upload a valid txt file.');
         }
@@ -130,15 +131,17 @@ const CsvPage = () => {
             return;
         }
 
-        // set the glossary
-        setGlossary(buildGlossary(categorizedLineItems));
+        const newGlossary = buildGlossary(categorizedLineItems, glossary);
+        if (!isEqual(glossary, newGlossary)) {
+            // only update glossary if it changed to avoid infinite loop
+            setGlossary(newGlossary);
+        }
 
-        // sort and sum the categories
+        // always re-sort and re-sum the categories
         const summedCategories = sumCategories(categorizedLineItems);
         const roundedSummedCategories = sortAndSumCategories(summedCategories);
-
         setSumByCategory(roundedSummedCategories);
-    }, [categorizedLineItems, desiredCategories]);
+    }, [categorizedLineItems, desiredCategories, glossary]);
 
     return (
         <div className="p-4">
@@ -219,7 +222,10 @@ const CsvPage = () => {
                             </Tabs.Content>
 
                             <Tabs.Content value="Glossary">
-                                <GlossaryTab glossary={glossary} />
+                                <GlossaryTab
+                                    glossary={glossary}
+                                    categorizedLineItems={categorizedLineItems}
+                                />
                             </Tabs.Content>
                         </Tabs.Root>
                     </div>

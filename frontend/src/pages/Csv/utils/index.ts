@@ -107,12 +107,13 @@ export const sortAndSumCategories = (summedCategories: Record<string, number>): 
     return roundedSummedCategories;
 }
 
-export const buildGlossary = (categorizedLineItems: CategorizedLineItem[]) => {
+export const buildGlossary = (categorizedLineItems: CategorizedLineItem[], currentGlossary: Glossary) => {
     let glossary = {} as Glossary;
     for (const item of categorizedLineItems) {
         glossary[item.description] = item.category;
     }
-    return glossary
+    const mergedGlossary = Object.assign({}, currentGlossary, glossary);
+    return mergedGlossary;
 }
 
 const EXPORT_FILE_NAME = 'category_sums.csv';

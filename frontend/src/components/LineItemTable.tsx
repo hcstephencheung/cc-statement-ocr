@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Table } from '@radix-ui/themes';
 import TypeableSelect, { TypeableSelectOption } from './TypeableSelect';
-import { CategorizedLineItem } from '../pages/Csv/types';
+import { CategorizedLineItem, UNCATEGORIZED } from '../pages/Csv/types';
 
 interface LineItem {
     date: string;
@@ -47,7 +47,7 @@ const LineItemTable = ({
         if (typeof updateLineItem === 'function') {
             updateLineItem(newLineItem, idx)
         }
-    }, [updateLineItem])
+    }, [updateLineItem]);
 
     return (
         <Table.Root>
@@ -73,6 +73,7 @@ const LineItemTable = ({
                                 defaultOption={{ label: lineItem.category, value: lineItem.category } as TypeableSelectOption}
                                 onOptionsChange={handleOnOptionsChange}
                                 onSelectedOptionChange={(value) => handleSelectedCategoryChange(lineItem as CategorizedLineItem, idx, value)}
+                                triggerProps={lineItem.category === UNCATEGORIZED ? { color: 'tomato' } : {}}
                             />
                         </Table.Cell>}
                     </Table.Row>

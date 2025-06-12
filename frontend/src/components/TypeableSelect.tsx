@@ -3,21 +3,26 @@ import { Select, TextField } from "@radix-ui/themes";
 
 export interface TypeableSelectOption {
     label: string;
-    value: string
+    value: string;
+    color?: string;
 };
 
 export interface TypeableSelectProps {
     options: TypeableSelectOption[];
     defaultOption: TypeableSelectOption,
     onOptionsChange: (options: TypeableSelectOption[]) => void,
-    onSelectedOptionChange: (value: string) => void
+    onSelectedOptionChange: (value: string) => void,
+    triggerProps?: Select.TriggerProps
+    annotationOptionFn?: (option: TypeableSelectOption) => Select.ItemProps | {}
 }
 
 const TypeableSelect = ({
     options,
     defaultOption,
     onOptionsChange,
-    onSelectedOptionChange
+    onSelectedOptionChange,
+    triggerProps = {},
+    annotationOptionFn
 }: TypeableSelectProps) => {
     const [textInput, setTextInput] = useState('');
 
@@ -44,20 +49,29 @@ const TypeableSelect = ({
         }
     }
 
+    const defaultTriggerProps = { variant: 'soft', color: 'indigo' };
+    const _triggerProps = Object.assign(defaultTriggerProps, triggerProps)
+
     return (
         <Select.Root onValueChange={onSelectedOptionChange} value={defaultOption.value}>
             <TextField.Root placeholder="Add a category..." value={textInput} onChange={handleTextInputChange} onKeyDown={handleTextInputKeydown}>
                 <TextField.Slot pl="0">
-                    <Select.Trigger variant="soft" color="indigo" />
+                    <Select.Trigger {..._triggerProps} />
                 </TextField.Slot>
             </TextField.Root>
 
             <Select.Content position="popper" side="bottom">
                 {options.map((option, idx) => {
+                    let annotatedProps = {};
+                    if (annotationOptionFn && typeof annotationOptionFn === 'function') {
+                        annotatedProps = annotationOptionFn(option);
+                    }
+
                     return (
                         <Select.Item
                             value={option.value}
                             key={`${option.value}-${idx}`}
+                            {...annotatedProps}
                         >{option.label}</Select.Item>
                     )
                 })}
