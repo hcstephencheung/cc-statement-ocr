@@ -37,7 +37,7 @@ export const BankRadioCard = ({
                 defaultValue={bank}
                 onValueChange={handleBankChange}
                 variant="classic"
-                columns={`${Object.entries(Banks).length}`}
+                columns="repeat(auto-fit, minmax(100px, 1fr))"
             >
                 {Object.entries(Banks).map(([_, bankName], index) => (
                     <RadioCards.Item key={index} value={bankName} className="w-full">

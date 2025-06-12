@@ -32,7 +32,9 @@ const GlossaryTab = ({
             >
                 <DownloadIcon /> Save definitions
             </Button>
-            <DataTable data={glossary} annotations={annotations} />
+            <Box overflow="scroll" minWidth="600px">
+                <DataTable data={glossary} annotations={annotations} />
+            </Box>
         </Box>
     )
 }

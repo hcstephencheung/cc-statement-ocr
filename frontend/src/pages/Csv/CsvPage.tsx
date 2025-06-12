@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Heading, Button, Spinner, Tabs, Box, Flex } from '@radix-ui/themes';
+import { Heading, Button, Spinner, Tabs, Box, Flex, Container } from '@radix-ui/themes';
 import { FilePlusIcon, MagicWandIcon, ReloadIcon } from '@radix-ui/react-icons';
 import DesiredCategories from '../../components/DesiredCategories';
 import LineItemTable from '../../components/LineItemTable';
@@ -144,12 +144,15 @@ const CsvPage = () => {
     }, [categorizedLineItems, desiredCategories, glossary]);
 
     return (
-        <div className="p-4">
+        <Container width="100%" p="4">
             <Heading as="h1" size="6" mb="4">CSV solution</Heading>
-            <DesiredCategories categories={desiredCategories} setCategories={setDesiredCategories} />
 
-            <Box>
-                <Box width="50%">
+            <Box width="100%">
+                <DesiredCategories categories={desiredCategories} setCategories={setDesiredCategories} />
+            </Box>
+
+            <Box width="100%">
+                <Box>
                     <BankRadioCard
                         bank={bank}
                         setBank={setBank}
@@ -167,7 +170,8 @@ const CsvPage = () => {
                 </Box>
             </Box>
 
-            <Flex gapX="2">
+            <Heading as="h3" my="4">Your credit card statement</Heading>
+            <Flex gap="2" width="100%" wrap="wrap">
                 <Button onClick={() => resetEverything()} color="tomato">
                     <ReloadIcon /> Start over
                 </Button>
@@ -193,44 +197,46 @@ const CsvPage = () => {
                 )}
             </Flex>
 
-            {/* Summed categories */}
-            {Object.keys(sumByCategory).length <= 0 ?
-                lineItems.length > 0 && <LineItemTable lineItems={lineItems} />
-                : (
-                    <div className="mt-4">
-                        <Tabs.Root defaultValue="LineItems">
-                            <Tabs.List>
-                                <Tabs.Trigger value="LineItems">Line Items</Tabs.Trigger>
-                                <Tabs.Trigger value="SumByCategory">Sum By Category</Tabs.Trigger>
-                                <Tabs.Trigger value="Glossary">Glossary</Tabs.Trigger>
-                            </Tabs.List>
+            <Box width="100%">
+                {/* Summed categories */}
+                {Object.keys(sumByCategory).length <= 0 ?
+                    lineItems.length > 0 && <LineItemTable lineItems={lineItems} />
+                    : (
+                        <div className="mt-4">
+                            <Tabs.Root defaultValue="LineItems">
+                                <Tabs.List>
+                                    <Tabs.Trigger value="LineItems">Line Items</Tabs.Trigger>
+                                    <Tabs.Trigger value="SumByCategory">Sum By Category</Tabs.Trigger>
+                                    <Tabs.Trigger value="Glossary">Glossary</Tabs.Trigger>
+                                </Tabs.List>
 
-                            <Tabs.Content value="LineItems">
-                                <LineItemTable lineItems={categorizedLineItems} updateLineItem={updateLineItem} />
-                            </Tabs.Content>
+                                <Tabs.Content value="LineItems">
+                                    <LineItemTable lineItems={categorizedLineItems} updateLineItem={updateLineItem} />
+                                </Tabs.Content>
 
-                            <Tabs.Content value="SumByCategory">
-                                <Box>
-                                    <Button
-                                        onClick={() => exportSumsToCsv(sumByCategory)}
-                                        my="4"
-                                    >
-                                        <FilePlusIcon /> Export to CSV
-                                    </Button>
-                                    <DataTable data={sumByCategory} />
-                                </Box>
-                            </Tabs.Content>
+                                <Tabs.Content value="SumByCategory">
+                                    <Box>
+                                        <Button
+                                            onClick={() => exportSumsToCsv(sumByCategory)}
+                                            my="4"
+                                        >
+                                            <FilePlusIcon /> Export to CSV
+                                        </Button>
+                                        <DataTable data={sumByCategory} />
+                                    </Box>
+                                </Tabs.Content>
 
-                            <Tabs.Content value="Glossary">
-                                <GlossaryTab
-                                    glossary={glossary}
-                                    categorizedLineItems={categorizedLineItems}
-                                />
-                            </Tabs.Content>
-                        </Tabs.Root>
-                    </div>
-                )}
-        </div >
+                                <Tabs.Content value="Glossary">
+                                    <GlossaryTab
+                                        glossary={glossary}
+                                        categorizedLineItems={categorizedLineItems}
+                                    />
+                                </Tabs.Content>
+                            </Tabs.Root>
+                        </div>
+                    )}
+            </Box>
+        </Container>
     )
 }
 
