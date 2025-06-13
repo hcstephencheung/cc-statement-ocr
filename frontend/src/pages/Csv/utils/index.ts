@@ -186,3 +186,38 @@ export const loadTextFileAsObject = async (file: File): Promise<Record<string, s
     }
     return obj;
 };
+
+/**
+ * Parses a date string in common formats into a human-readable date.
+ * Supports: YYYYMMDD, YYYY-MM-DD, YYYY/MM/DD, MM/DD/YYYY, DD/MM/YYYY
+ * Returns the original string if parsing fails.
+ */
+export function parseDateString(dateStr: string): string {
+    let year: string, month: string, day: string;
+
+    // YYYYMMDD
+    if (/^\d{8}$/.test(dateStr)) {
+        year = dateStr.slice(0, 4);
+        month = dateStr.slice(4, 6);
+        day = dateStr.slice(6, 8);
+    }
+    // YYYY-MM-DD or YYYY/MM/DD
+    else if (/^\d{4}[-/]\d{2}[-/]\d{2}$/.test(dateStr)) {
+        [year, month, day] = dateStr.split(/[-/]/);
+    }
+    // MM/DD/YYYY
+    else if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+        [month, day, year] = dateStr.split('/');
+    }
+    // DD/MM/YYYY
+    else if (/^\d{2}-\d{2}-\d{4}$/.test(dateStr)) {
+        [day, month, year] = dateStr.split('-');
+    }
+    else {
+        return dateStr;
+    }
+
+    const date = new Date(`${year}-${month}-${day}`);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+}

@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Table } from '@radix-ui/themes';
 import TypeableSelect, { TypeableSelectOption } from './TypeableSelect';
 import { CategorizedLineItem, UNCATEGORIZED } from '../pages/Csv/types';
+import { parseDateString } from '../pages/Csv/utils';
 
 interface LineItem {
     date: string;
@@ -63,7 +64,7 @@ const LineItemTable = ({
             <Table.Body>
                 {lineItems.map((lineItem, idx) => (
                     <Table.Row key={idx}>
-                        <Table.Cell className="px-4">{lineItem.date}</Table.Cell>
+                        <Table.Cell className="px-4">{parseDateString(lineItem.date)}</Table.Cell>
                         <Table.Cell className="px-4">{lineItem.description}</Table.Cell>
                         <Table.Cell className="px-4">{lineItem.debit ? 'Debit' : 'Credit'}</Table.Cell>
                         <Table.Cell className="px-4">{lineItem.amount}</Table.Cell>
@@ -73,7 +74,8 @@ const LineItemTable = ({
                                 defaultOption={{ label: lineItem.category, value: lineItem.category } as TypeableSelectOption}
                                 onOptionsChange={handleOnOptionsChange}
                                 onSelectedOptionChange={(value) => handleSelectedCategoryChange(lineItem as CategorizedLineItem, idx, value)}
-                                triggerProps={lineItem.category === UNCATEGORIZED ? { color: 'tomato' } : {}}
+                                triggerClassNames={lineItem.category === UNCATEGORIZED ?
+                                    ['bg-red-600', 'text-white'] : ['bg-green-600', 'text-white']}
                             />
                         </Table.Cell>}
                     </Table.Row>

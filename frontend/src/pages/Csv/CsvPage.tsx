@@ -10,6 +10,7 @@ import { tagLineItemsWithClassification, sumCategories, sortAndSumCategories, ex
 import GlossaryTab from '../../components/GlossaryTab';
 import FileUploader from '../../components/FileUploader';
 import isEqual from 'lodash/isEqual';
+import SumByCategoryTab from '../../components/SumByCategoryTab';
 
 const CsvPage = () => {
     const params = new URLSearchParams(window.location.search);
@@ -31,6 +32,7 @@ const CsvPage = () => {
         setLineItems([]);
         setCategorizedLineItems([]);
         setSumByCategory({});
+        setGlossary({});
     };
 
     const handleCsvFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -202,28 +204,20 @@ const CsvPage = () => {
                 {Object.keys(sumByCategory).length <= 0 ?
                     lineItems.length > 0 && <LineItemTable lineItems={lineItems} />
                     : (
-                        <div className="mt-4">
-                            <Tabs.Root defaultValue="LineItems">
-                                <Tabs.List>
-                                    <Tabs.Trigger value="LineItems">Line Items</Tabs.Trigger>
-                                    <Tabs.Trigger value="SumByCategory">Sum By Category</Tabs.Trigger>
-                                    <Tabs.Trigger value="Glossary">Glossary</Tabs.Trigger>
-                                </Tabs.List>
+                        <Tabs.Root defaultValue="LineItems" my="4">
+                            <Tabs.List>
+                                <Tabs.Trigger value="LineItems">Line Items</Tabs.Trigger>
+                                <Tabs.Trigger value="SumByCategory">Sum By Category</Tabs.Trigger>
+                                <Tabs.Trigger value="Glossary">Glossary</Tabs.Trigger>
+                            </Tabs.List>
 
+                            <Box overflow="scroll" my="4">
                                 <Tabs.Content value="LineItems">
                                     <LineItemTable lineItems={categorizedLineItems} updateLineItem={updateLineItem} />
                                 </Tabs.Content>
 
                                 <Tabs.Content value="SumByCategory">
-                                    <Box>
-                                        <Button
-                                            onClick={() => exportSumsToCsv(sumByCategory)}
-                                            my="4"
-                                        >
-                                            <FilePlusIcon /> Export to CSV
-                                        </Button>
-                                        <DataTable data={sumByCategory} />
-                                    </Box>
+                                    <SumByCategoryTab data={sumByCategory} />
                                 </Tabs.Content>
 
                                 <Tabs.Content value="Glossary">
@@ -232,8 +226,8 @@ const CsvPage = () => {
                                         categorizedLineItems={categorizedLineItems}
                                     />
                                 </Tabs.Content>
-                            </Tabs.Root>
-                        </div>
+                            </Box>
+                        </Tabs.Root>
                     )}
             </Box>
         </Container>

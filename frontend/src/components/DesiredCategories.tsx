@@ -50,7 +50,7 @@ const DesiredCategories: React.FC<{
                     </span>
                 ))}
             </div>
-            <Box width="80%">
+            <Box width="100%" maxWidth="760px" minWidth="100px">
                 <TextField.Root placeholder="Add category..." value={input} onChange={handleInputChange} onKeyDown={handleInputKeyDown}>
                     <TextField.Slot pr="3">
                         <IconButton variant="ghost" onClick={handleAddCategory} disabled={!input.trim()}>

@@ -1,10 +1,12 @@
 import React from 'react';
-import { DataList, Badge } from '@radix-ui/themes';
+import { DataList, Flex, Text, TextProps } from '@radix-ui/themes';
 
 interface DataTableProps {
     data: Record<string, any>;
-    annotations?: Record<string, any>;
     className?: string;
+    keyAnnotations?: Record<string, any>;
+    keyTextProps?: Record<string, TextProps>;
+    valueTextProps?: Record<string, TextProps>
 }
 
 const sortByAnnotated = (itemA: [string, string], itemB: [string, string], annotations?: Record<string, any>) => {
@@ -22,18 +24,24 @@ const sortByAnnotated = (itemA: [string, string], itemB: [string, string], annot
     return -1
 }
 
-const DataTable: React.FC<DataTableProps> = ({ data, annotations, className }) => (
-    <DataList.Root className={className}>
-        {Object.entries(data).sort((itemA, itemB) => sortByAnnotated(itemA, itemB, annotations)).map(([key, value]) => (
+const DataTable: React.FC<DataTableProps> = ({
+    data,
+    className,
+    keyAnnotations = {},
+    keyTextProps = {},
+    valueTextProps = {}
+}) => (
+    <DataList.Root className={className} orientation={{ initial: 'vertical', 'xs': 'horizontal' }}>
+        {Object.entries(data).sort((itemA, itemB) => sortByAnnotated(itemA, itemB, keyAnnotations)).map(([key, value]) => (
             <DataList.Item key={key}>
-                <DataList.Label>{key} {annotations && annotations[key]}</DataList.Label>
+                <DataList.Label>
+                    <Flex wrap="wrap" align="center">
+                        <Text weight="light" color="gray" {...Object.assign({}, keyTextProps[key])}>{key}</Text>
+                        {keyAnnotations[key]}
+                    </Flex>
+                </DataList.Label>
                 <DataList.Value>
-                    {Array.isArray(value)
-                        ? value.map((item, idx) => (
-                            <Badge key={idx} className="mr-1" color="gray">{item.name}</Badge>
-                        ))
-                        : `${value}`
-                    }
+                    <Text {...Object.assign({}, valueTextProps[value])}>{value}</Text>
                 </DataList.Value>
             </DataList.Item>
         ))}

@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import { Select, TextField } from "@radix-ui/themes";
+import { Box, Select, TextField, Text, Flex } from "@radix-ui/themes";
+import { Select as SelectPrimitive } from "radix-ui";
+import { CaretDownIcon } from "@radix-ui/react-icons";
+import classNames from "classnames";
 
 export interface TypeableSelectOption {
     label: string;
@@ -12,7 +15,7 @@ export interface TypeableSelectProps {
     defaultOption: TypeableSelectOption,
     onOptionsChange: (options: TypeableSelectOption[]) => void,
     onSelectedOptionChange: (value: string) => void,
-    triggerProps?: Select.TriggerProps
+    triggerClassNames?: string | string[],
     annotationOptionFn?: (option: TypeableSelectOption) => Select.ItemProps | {}
 }
 
@@ -21,7 +24,7 @@ const TypeableSelect = ({
     defaultOption,
     onOptionsChange,
     onSelectedOptionChange,
-    triggerProps = {},
+    triggerClassNames = '',
     annotationOptionFn
 }: TypeableSelectProps) => {
     const [textInput, setTextInput] = useState('');
@@ -49,18 +52,26 @@ const TypeableSelect = ({
         }
     }
 
-    const defaultTriggerProps = { variant: 'soft', color: 'indigo' };
-    const _triggerProps = Object.assign(defaultTriggerProps, triggerProps)
-
     return (
         <Select.Root onValueChange={onSelectedOptionChange} value={defaultOption.value}>
-            <TextField.Root placeholder="Add a category..." value={textInput} onChange={handleTextInputChange} onKeyDown={handleTextInputKeydown}>
-                <TextField.Slot pl="0">
-                    <Select.Trigger {..._triggerProps} />
-                </TextField.Slot>
-            </TextField.Root>
+            <Box minWidth="240px">
+                <TextField.Root placeholder="Add a category..." value={textInput} onChange={handleTextInputChange} onKeyDown={handleTextInputKeydown}>
+                    <TextField.Slot pl="0">
+                        <SelectPrimitive.Trigger asChild>
+                            <Flex maxWidth="125px" px="2" align="center"
+                                className={classNames("items-center px-2 py-1 text-sm cursor-pointer", triggerClassNames)}
+                            >
+                                <Text truncate>
+                                    {defaultOption.value}
+                                </Text>
+                                <CaretDownIcon />
+                            </Flex>
+                        </SelectPrimitive.Trigger>
+                    </TextField.Slot>
+                </TextField.Root>
+            </Box >
 
-            <Select.Content position="popper" side="bottom">
+            <Select.Content position="popper" side="bottom" color="green">
                 {options.map((option, idx) => {
                     let annotatedProps = {};
                     if (annotationOptionFn && typeof annotationOptionFn === 'function') {
@@ -76,7 +87,7 @@ const TypeableSelect = ({
                     )
                 })}
             </Select.Content>
-        </Select.Root>
+        </Select.Root >
     )
 }
 

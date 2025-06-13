@@ -1,6 +1,6 @@
 import { DownloadIcon } from "@radix-ui/react-icons";
-import { Button, Box, Badge } from "@radix-ui/themes";
-import { CategorizedLineItem, Glossary } from "../pages/Csv/types";
+import { Button, Box, Badge, TextProps } from "@radix-ui/themes";
+import { CategorizedLineItem, Glossary, UNCATEGORIZED } from "../pages/Csv/types";
 import DataTable from "./DataTable";
 import { saveObjectAsTextFile } from "../pages/Csv/utils";
 import React from "react";
@@ -23,6 +23,7 @@ const GlossaryTab = ({
             annotations[item.description] = <Badge color="green" ml="2">In current statement</Badge>
         }
     }
+    const markUncategorizedAsRed = { [UNCATEGORIZED]: { color: 'tomato' } as TextProps }
 
     return (
         <Box>
@@ -32,8 +33,8 @@ const GlossaryTab = ({
             >
                 <DownloadIcon /> Save definitions
             </Button>
-            <Box overflow="scroll" minWidth="600px">
-                <DataTable data={glossary} annotations={annotations} />
+            <Box overflow="scroll">
+                <DataTable data={glossary} keyAnnotations={annotations} valueTextProps={markUncategorizedAsRed} />
             </Box>
         </Box>
     )
