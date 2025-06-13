@@ -1,6 +1,26 @@
 version: '3.8'
 
 services:
+  traefik:
+    image: "traefik:v3.4"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entryPoints.web.address=:80"
+      - "--log.level=DEBUG"
+      - "--log.filePath=/logs/traefik.log"
+    networks:
+      - app-network
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./logs:/logs"
+
   backend:
     build:
       context: ./backend
@@ -11,9 +31,13 @@ services:
       - app-network
     volumes:
       - ./backend:/backend
-    command: uvicorn app:app --host 0.0.0.0 --port 9000 --reload
 
   frontend:
+    container_name: "frontend"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=Host(`frontend.localhost`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
     build:
       context: ./frontend
       dockerfile: Dockerfile
