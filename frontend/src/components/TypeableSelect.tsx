@@ -16,7 +16,8 @@ export interface TypeableSelectProps {
     onOptionsChange: (options: TypeableSelectOption[]) => void,
     onSelectedOptionChange: (value: string) => void,
     triggerClassNames?: string | string[],
-    annotationOptionFn?: (option: TypeableSelectOption) => Select.ItemProps | {}
+    annotationOptionFn?: (option: TypeableSelectOption) => Select.ItemProps | {},
+    selectionColor?: string;
 }
 
 const TypeableSelect = ({
@@ -25,7 +26,8 @@ const TypeableSelect = ({
     onOptionsChange,
     onSelectedOptionChange,
     triggerClassNames = '',
-    annotationOptionFn
+    annotationOptionFn,
+    selectionColor = 'indigo'
 }: TypeableSelectProps) => {
     const [textInput, setTextInput] = useState('');
 
@@ -41,6 +43,7 @@ const TypeableSelect = ({
         }
         if (sanitizedTextInput !== '') {
             onOptionsChange([...options, newOption]);
+            onSelectedOptionChange(newOption.value);
             setTextInput('');
         }
     }
@@ -71,7 +74,7 @@ const TypeableSelect = ({
                 </TextField.Root>
             </Box >
 
-            <Select.Content position="popper" side="bottom" color="green">
+            <Select.Content position="popper" side="bottom" color={selectionColor}>
                 {options.map((option, idx) => {
                     let annotatedProps = {};
                     if (annotationOptionFn && typeof annotationOptionFn === 'function') {

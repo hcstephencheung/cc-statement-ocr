@@ -20,7 +20,7 @@ const GlossaryTab = ({
     const annotations: { [key: string]: React.ReactNode } = {};
     for (const item of categorizedLineItems) {
         if (glossary[item.description]) {
-            annotations[item.description] = <Badge color="green" ml="2">In current statement</Badge>
+            annotations[item.description] = <Badge color="green" mr="2">In current statement</Badge>
         }
     }
     const markUncategorizedAsRed = { [UNCATEGORIZED]: { color: 'tomato' } as TextProps }

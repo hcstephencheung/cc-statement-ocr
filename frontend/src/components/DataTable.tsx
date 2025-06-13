@@ -36,8 +36,8 @@ const DataTable: React.FC<DataTableProps> = ({
             <DataList.Item key={key}>
                 <DataList.Label>
                     <Flex wrap="wrap" align="center">
-                        <Text weight="light" color="gray" {...Object.assign({}, keyTextProps[key])}>{key}</Text>
                         {keyAnnotations[key]}
+                        <Text weight="light" color="gray" {...Object.assign({}, keyTextProps[key])}>{key}</Text>
                     </Flex>
                 </DataList.Label>
                 <DataList.Value>
